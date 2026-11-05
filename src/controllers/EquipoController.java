@@ -1,4 +1,3 @@
-
 package controllers;
 
 import models.EquipoModel;
@@ -33,12 +32,6 @@ public class EquipoController {
         if (codigo <= 0) return null;
 
         return equipoRepository.buscarPorCodigo(codigo);
-    }
-
-    public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
-        if (codigo <= 0) return false;
-
-        return equipoRepository.actualizarDisponibilidad(codigo, disponible);
     }
 
     public boolean eliminar(int codigo) {

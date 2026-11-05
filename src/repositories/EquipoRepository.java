@@ -1,4 +1,3 @@
-
 package repositories;
 
 import models.EquipoModel;
@@ -13,8 +12,6 @@ public interface EquipoRepository {
     ArrayList<EquipoModel> listar();
 
     EquipoModel buscarPorCodigo(int codigo);
-
-    boolean actualizarDisponibilidad(int codigo, boolean disponible);
 
     boolean actualizarDisponibilidad(Connection conexion, int codigo, boolean disponible) throws SQLException;
 

@@ -1,4 +1,3 @@
-
 package dao;
 
 import config.ConexionBD;
@@ -78,25 +77,6 @@ public class EquipoDAO implements EquipoRepository {
         }
 
         return null;
-    }
-
-    @Override
-    public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
-        String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ?";
-
-        try (Connection conexion = ConexionBD.conectar()) {
-            if (conexion == null) return false;
-
-            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-                consulta.setBoolean(1, disponible);
-                consulta.setInt(2, codigo);
-
-                return consulta.executeUpdate() > 0;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al actualizar disponibilidad: " + e.getMessage());
-            return false;
-        }
     }
 
     @Override

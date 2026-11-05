@@ -1,4 +1,3 @@
-
 package views;
 
 import controllers.EquipoController;
@@ -24,9 +23,8 @@ public class EquipoView {
             System.out.println("\n===== GESTION DE EQUIPOS =====");
             System.out.println("1. Registrar equipo");
             System.out.println("2. Listar equipos");
-            System.out.println("3. Actualizar disponibilidad");
-            System.out.println("4. Eliminar equipo");
-            System.out.println("5. Volver");
+            System.out.println("3. Eliminar equipo");
+            System.out.println("4. Volver");
             System.out.print("Seleccione una opcion: ");
 
             try {
@@ -40,12 +38,9 @@ public class EquipoView {
                         listar();
                         break;
                     case 3:
-                        actualizarDisponibilidad();
-                        break;
-                    case 4:
                         eliminar();
                         break;
-                    case 5:
+                    case 4:
                         break;
                     default:
                         System.out.println("Opcion no valida.");
@@ -55,7 +50,7 @@ public class EquipoView {
                 System.out.println("Ingrese un numero valido.");
             }
 
-        } while (opcion != 5);
+        } while (opcion != 4);
     }
 
     private void registrar() {
@@ -123,30 +118,6 @@ public class EquipoView {
             System.out.println("Tipo: " + equipo.getTipo());
             System.out.printf("Tarifa diaria: S/ %.2f%n", equipo.getTarifaDia());
             System.out.println("Disponible: " + (equipo.isDisponible() ? "Si" : "No"));
-        }
-    }
-
-    private void actualizarDisponibilidad() {
-        try {
-            System.out.print("Codigo del equipo: ");
-            int codigo = Integer.parseInt(scanner.nextLine());
-
-            System.out.print("¿Esta disponible? (1. Si / 2. No): ");
-            int opcion = Integer.parseInt(scanner.nextLine());
-
-            if (opcion != 1 && opcion != 2) {
-                System.out.println("Opcion no valida.");
-                return;
-            }
-
-            if (equipoController.actualizarDisponibilidad(codigo, opcion == 1)) {
-                System.out.println("Disponibilidad actualizada.");
-            } else {
-                System.out.println("No se pudo actualizar el equipo.");
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("Ingrese valores numericos validos.");
         }
     }
 
