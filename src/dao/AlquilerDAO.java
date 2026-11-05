@@ -1,4 +1,3 @@
-
 package dao;
 
 import config.ConexionBD;
@@ -154,12 +153,18 @@ public class AlquilerDAO implements AlquilerRepository {
 
         String sql =
                 "SELECT t.tipo, COALESCE(SUM(a.monto_cobrado), 0) AS total " +
-                        "FROM tipos_equipo t " +
+                        "FROM (" +
+                        "SELECT 'CAMARA' AS tipo, 1 AS orden " +
+                        "UNION ALL SELECT 'ILUMINACION', 2 " +
+                        "UNION ALL SELECT 'AUDIO', 3 " +
+                        "UNION ALL SELECT DISTINCT tipo, 4 FROM equipos " +
+                        "WHERE tipo NOT IN ('CAMARA', 'ILUMINACION', 'AUDIO')" +
+                        ") t " +
                         "LEFT JOIN equipos e ON t.tipo = e.tipo " +
                         "LEFT JOIN alquileres a ON e.codigo = a.equipo_codigo " +
                         "AND a.fecha_inicio >= ? AND a.fecha_inicio < ? " +
                         "GROUP BY t.tipo, t.orden " +
-                        "ORDER BY t.orden";
+                        "ORDER BY t.orden, t.tipo";
 
         try {
             LocalDate inicio = LocalDate.of(anio, mes, 1);

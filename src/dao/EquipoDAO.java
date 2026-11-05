@@ -82,13 +82,14 @@ public class EquipoDAO implements EquipoRepository {
     @Override
     public boolean actualizarDisponibilidad(Connection conexion, int codigo, boolean disponible)
             throws SQLException {
-        String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ?";
+        String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ? AND disponible <> ?";
 
         try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
             consulta.setBoolean(1, disponible);
             consulta.setInt(2, codigo);
+            consulta.setBoolean(3, disponible);
 
-            return consulta.executeUpdate() > 0;
+            return consulta.executeUpdate() == 1;
         }
     }
 

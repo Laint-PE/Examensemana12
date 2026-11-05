@@ -1,17 +1,5 @@
-
 CREATE DATABASE IF NOT EXISTS equipaya;
 USE equipaya;
-
-CREATE TABLE IF NOT EXISTS tipos_equipo (
-                                            tipo VARCHAR(30) PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL,
-    orden INT NOT NULL UNIQUE
-    ) ENGINE=InnoDB;
-
-INSERT IGNORE INTO tipos_equipo (tipo, descripcion, orden) VALUES
-('CAMARA', 'Equipos de grabacion', 1),
-('ILUMINACION', 'Equipos de iluminacion', 2),
-('AUDIO', 'Equipos de sonido', 3);
 
 CREATE TABLE IF NOT EXISTS clientes (
                                         documento VARCHAR(11) PRIMARY KEY,
@@ -27,13 +15,7 @@ CREATE TABLE IF NOT EXISTS equipos (
     disponible BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT chk_equipo_tarifa
-    CHECK (tarifa_dia > 0),
-
-    CONSTRAINT fk_equipo_tipo
-    FOREIGN KEY (tipo)
-    REFERENCES tipos_equipo(tipo)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
+    CHECK (tarifa_dia > 0)
     ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS alquileres (

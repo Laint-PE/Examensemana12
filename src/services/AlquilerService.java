@@ -34,7 +34,14 @@ public class AlquilerService {
         }
 
         EquipoModel equipo = alquiler.getEquipo();
-        double monto = equipo.calcularMonto(alquiler.getDias());
+        double monto;
+
+        try {
+            monto = equipo.calcularMonto(alquiler.getDias());
+        } catch (RuntimeException e) {
+            System.out.println("Error al calcular el alquiler: " + e.getMessage());
+            return false;
+        }
 
         if (!Double.isFinite(monto) || monto < 0) {
             return false;
@@ -58,13 +65,13 @@ public class AlquilerService {
             try {
                 if (!equipoRepository.ocuparSiDisponible(
                         conexion, equipo.getCodigo())) {
-                    conexion.rollback();
+                    revertir(conexion);
                     return false;
                 }
 
                 if (!alquilerRepository.registrar(
                         conexion, nuevoAlquiler)) {
-                    conexion.rollback();
+                    revertir(conexion);
                     return false;
                 }
 
@@ -72,12 +79,13 @@ public class AlquilerService {
                 return true;
 
             } catch (SQLException | RuntimeException e) {
-                conexion.rollback();
-                throw e;
+                revertir(conexion);
+                System.out.println("Error al registrar alquiler: " + e.getMessage());
+                return false;
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al registrar alquiler: " + e.getMessage());
+            System.out.println("Error de conexion al registrar alquiler: " + e.getMessage());
             return false;
         }
     }
@@ -97,18 +105,18 @@ public class AlquilerService {
                         );
 
                 if (codigoEquipo == -1) {
-                    conexion.rollback();
+                    revertir(conexion);
                     return false;
                 }
 
                 if (!alquilerRepository.marcarDevuelto(conexion, id)) {
-                    conexion.rollback();
+                    revertir(conexion);
                     return false;
                 }
 
                 if (!equipoRepository.actualizarDisponibilidad(
                         conexion, codigoEquipo, true)) {
-                    conexion.rollback();
+                    revertir(conexion);
                     return false;
                 }
 
@@ -116,13 +124,22 @@ public class AlquilerService {
                 return true;
 
             } catch (SQLException | RuntimeException e) {
-                conexion.rollback();
-                throw e;
+                revertir(conexion);
+                System.out.println("Error al registrar devolucion: " + e.getMessage());
+                return false;
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al registrar devolucion: " + e.getMessage());
+            System.out.println("Error de conexion al registrar devolucion: " + e.getMessage());
             return false;
+        }
+    }
+
+    private void revertir(Connection conexion) {
+        try {
+            conexion.rollback();
+        } catch (SQLException e) {
+            System.out.println("Error al revertir la transaccion: " + e.getMessage());
         }
     }
 }

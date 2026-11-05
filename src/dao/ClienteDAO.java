@@ -86,7 +86,8 @@ public class ClienteDAO implements ClienteRepository {
         String texto = nombre.trim()
                 .replace("!", "!!")
                 .replace("%", "!%")
-                .replace("_", "!_");
+                .replace("_", "!_")
+                .replace("\\", "!\\");
 
         String sql = "SELECT * FROM clientes WHERE nombre LIKE ? ESCAPE '!' ORDER BY nombre";
 
