@@ -12,7 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.DateTimeException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class AlquilerDAO implements AlquilerRepository {
 
@@ -39,7 +41,7 @@ public class AlquilerDAO implements AlquilerRepository {
             consulta.setInt(4, alquiler.getDias());
             consulta.setDouble(5, alquiler.getMontoCobrado());
 
-            return consulta.executeUpdate() > 0;
+            return consulta.executeUpdate() == 1;
         }
     }
 
@@ -146,6 +148,10 @@ public class AlquilerDAO implements AlquilerRepository {
     public ArrayList<String> reporteMensual(int mes, int anio) {
         ArrayList<String> reporte = new ArrayList<>();
 
+        if (mes < 1 || mes > 12 || anio < 1) {
+            return reporte;
+        }
+
         String sql =
                 "SELECT t.tipo, COALESCE(SUM(a.monto_cobrado), 0) AS total " +
                         "FROM tipos_equipo t " +
@@ -170,13 +176,17 @@ public class AlquilerDAO implements AlquilerRepository {
                         while (resultado.next()) {
                             reporte.add(
                                     resultado.getString("tipo") + ": S/ " +
-                                            String.format("%.2f", resultado.getDouble("total"))
+                                            String.format(
+                                                    Locale.US,
+                                                    "%.2f",
+                                                    resultado.getDouble("total")
+                                            )
                             );
                         }
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException | DateTimeException e) {
             System.out.println("Error al generar reporte: " + e.getMessage());
         }
 

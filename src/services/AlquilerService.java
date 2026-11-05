@@ -1,4 +1,3 @@
-
 package services;
 
 import config.ConexionBD;
@@ -57,20 +56,14 @@ public class AlquilerService {
             conexion.setAutoCommit(false);
 
             try {
-                boolean ocupado = equipoRepository.ocuparSiDisponible(
-                        conexion, equipo.getCodigo()
-                );
-
-                if (!ocupado) {
+                if (!equipoRepository.ocuparSiDisponible(
+                        conexion, equipo.getCodigo())) {
                     conexion.rollback();
                     return false;
                 }
 
-                boolean registrado = alquilerRepository.registrar(
-                        conexion, nuevoAlquiler
-                );
-
-                if (!registrado) {
+                if (!alquilerRepository.registrar(
+                        conexion, nuevoAlquiler)) {
                     conexion.rollback();
                     return false;
                 }
@@ -98,29 +91,23 @@ public class AlquilerService {
             conexion.setAutoCommit(false);
 
             try {
-                int codigoEquipo = alquilerRepository.obtenerCodigoEquipoPendiente(
-                        conexion, id
-                );
+                int codigoEquipo =
+                        alquilerRepository.obtenerCodigoEquipoPendiente(
+                                conexion, id
+                        );
 
                 if (codigoEquipo == -1) {
                     conexion.rollback();
                     return false;
                 }
 
-                boolean devuelto = alquilerRepository.marcarDevuelto(
-                        conexion, id
-                );
-
-                if (!devuelto) {
+                if (!alquilerRepository.marcarDevuelto(conexion, id)) {
                     conexion.rollback();
                     return false;
                 }
 
-                boolean disponible = equipoRepository.actualizarDisponibilidad(
-                        conexion, codigoEquipo, true
-                );
-
-                if (!disponible) {
+                if (!equipoRepository.actualizarDisponibilidad(
+                        conexion, codigoEquipo, true)) {
                     conexion.rollback();
                     return false;
                 }
