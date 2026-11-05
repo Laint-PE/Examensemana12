@@ -9,11 +9,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class EquipoDAO implements EquipoRepository {
 
     @Override
     public boolean registrar(EquipoModel equipo) {
+        if (equipo == null || equipo.getTipo() == null ||
+                !EquipoFactory.getTiposRegistrados().contains(
+                        equipo.getTipo().trim().toUpperCase(Locale.ROOT)) ||
+                equipo.getCodigo() <= 0 ||
+                equipo.getDescripcion() == null ||
+                equipo.getDescripcion().trim().isEmpty() ||
+                !Double.isFinite(equipo.getTarifaDia()) ||
+                equipo.getTarifaDia() <= 0) {
+            return false;
+        }
+
         String sql = "INSERT INTO equipos (codigo, tipo, descripcion, tarifa_dia, disponible) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.conectar()) {
@@ -21,12 +33,12 @@ public class EquipoDAO implements EquipoRepository {
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setInt(1, equipo.getCodigo());
-                consulta.setString(2, equipo.getTipo());
-                consulta.setString(3, equipo.getDescripcion());
+                consulta.setString(2, equipo.getTipo().trim().toUpperCase(Locale.ROOT));
+                consulta.setString(3, equipo.getDescripcion().trim());
                 consulta.setDouble(4, equipo.getTarifaDia());
                 consulta.setBoolean(5, equipo.isDisponible());
 
-                return consulta.executeUpdate() > 0;
+                return consulta.executeUpdate() == 1;
             }
         } catch (SQLException e) {
             System.out.println("Error al registrar equipo: " + e.getMessage());
@@ -80,6 +92,24 @@ public class EquipoDAO implements EquipoRepository {
     }
 
     @Override
+    public EquipoModel buscarPorCodigoBloqueado(Connection conexion, int codigo)
+            throws SQLException {
+        String sql = "SELECT * FROM equipos WHERE codigo = ? FOR UPDATE";
+
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+            consulta.setInt(1, codigo);
+
+            try (ResultSet resultado = consulta.executeQuery()) {
+                if (resultado.next()) {
+                    return convertirEquipo(resultado);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public boolean actualizarDisponibilidad(Connection conexion, int codigo, boolean disponible)
             throws SQLException {
         String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ? AND disponible <> ?";
@@ -114,7 +144,7 @@ public class EquipoDAO implements EquipoRepository {
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setInt(1, codigo);
 
-                return consulta.executeUpdate() > 0;
+                return consulta.executeUpdate() == 1;
             }
         } catch (SQLException e) {
             System.out.println("Error al eliminar equipo: " + e.getMessage());

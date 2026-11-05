@@ -4,6 +4,7 @@ import config.ConexionBD;
 import dao.AlquilerDAO;
 import dao.EquipoDAO;
 import models.AlquilerModel;
+import models.ClienteModel;
 import models.EquipoModel;
 import repositories.AlquilerRepository;
 import repositories.EquipoRepository;
@@ -29,33 +30,13 @@ public class AlquilerService {
 
     public boolean registrar(AlquilerModel alquiler) {
         if (alquiler == null || alquiler.getCliente() == null ||
-                alquiler.getEquipo() == null || alquiler.getDias() <= 0) {
+                alquiler.getCliente().getDocumento() == null ||
+                alquiler.getCliente().getDocumento().trim().isEmpty() ||
+                alquiler.getEquipo() == null ||
+                alquiler.getEquipo().getCodigo() <= 0 ||
+                alquiler.getDias() <= 0) {
             return false;
         }
-
-        EquipoModel equipo = alquiler.getEquipo();
-        double monto;
-
-        try {
-            monto = equipo.calcularMonto(alquiler.getDias());
-        } catch (RuntimeException e) {
-            System.out.println("Error al calcular el alquiler: " + e.getMessage());
-            return false;
-        }
-
-        if (!Double.isFinite(monto) || monto < 0) {
-            return false;
-        }
-
-        AlquilerModel nuevoAlquiler = new AlquilerModel(
-                0,
-                alquiler.getCliente(),
-                equipo,
-                LocalDate.now(),
-                alquiler.getDias(),
-                monto,
-                false
-        );
 
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return false;
@@ -63,14 +44,39 @@ public class AlquilerService {
             conexion.setAutoCommit(false);
 
             try {
+                EquipoModel equipo = equipoRepository.buscarPorCodigoBloqueado(
+                        conexion, alquiler.getEquipo().getCodigo()
+                );
+
+                if (equipo == null || !equipo.isDisponible()) {
+                    revertir(conexion);
+                    return false;
+                }
+
+                double monto = equipo.calcularMonto(alquiler.getDias());
+
+                if (!Double.isFinite(monto) || monto < 0) {
+                    revertir(conexion);
+                    return false;
+                }
+
                 if (!equipoRepository.ocuparSiDisponible(
                         conexion, equipo.getCodigo())) {
                     revertir(conexion);
                     return false;
                 }
 
-                if (!alquilerRepository.registrar(
-                        conexion, nuevoAlquiler)) {
+                AlquilerModel nuevoAlquiler = new AlquilerModel(
+                        0,
+                        alquiler.getCliente(),
+                        equipo,
+                        LocalDate.now(),
+                        alquiler.getDias(),
+                        monto,
+                        false
+                );
+
+                if (!alquilerRepository.registrar(conexion, nuevoAlquiler)) {
                     revertir(conexion);
                     return false;
                 }

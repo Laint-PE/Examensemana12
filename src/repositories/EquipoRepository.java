@@ -13,6 +13,8 @@ public interface EquipoRepository {
 
     EquipoModel buscarPorCodigo(int codigo);
 
+    EquipoModel buscarPorCodigoBloqueado(Connection conexion, int codigo) throws SQLException;
+
     boolean actualizarDisponibilidad(Connection conexion, int codigo, boolean disponible) throws SQLException;
 
     boolean ocuparSiDisponible(Connection conexion, int codigo) throws SQLException;

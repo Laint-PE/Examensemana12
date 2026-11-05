@@ -1,8 +1,10 @@
 package controllers;
 
 import models.EquipoModel;
+import models.EquipoFactory;
 import repositories.EquipoRepository;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class EquipoController {
 
@@ -14,6 +16,9 @@ public class EquipoController {
 
     public boolean registrar(EquipoModel equipo) {
         if (equipo == null || equipo.getCodigo() <= 0 ||
+                equipo.getTipo() == null ||
+                !EquipoFactory.getTiposRegistrados().contains(
+                        equipo.getTipo().trim().toUpperCase(Locale.ROOT)) ||
                 equipo.getDescripcion() == null ||
                 equipo.getDescripcion().trim().isEmpty() ||
                 !Double.isFinite(equipo.getTarifaDia()) ||
