@@ -1,20 +1,36 @@
+
 package models;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
 public class EquipoFactory {
 
-    public static EquipoModel crearEquipo(String tipo, int codigo, String descripcion, double tarifaDia, boolean disponible) {
+    public interface CreadorEquipo {
+        EquipoModel crear(int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible);
+    }
 
-        switch (tipo.toUpperCase()) {
-            case "CAMARA":
-                return new CamaraModel(codigo, descripcion, tarifaDia, disponible);
+    private static Map<String, CreadorEquipo> registros = new HashMap<>();
 
-            case "AUDIO":
-                return new AudioModel(codigo, descripcion, tarifaDia, disponible);
+    static {
+        registrarTipo("CAMARA", CamaraModel::new);
+        registrarTipo("AUDIO", AudioModel::new);
+        registrarTipo("ILUMINACION", IluminacionModel::new);
+        registrarTipo("DRON", DronModel::new);
+    }
 
-            case "ILUMINACION":
-                return new IluminacionModel(codigo, descripcion, tarifaDia, disponible);
+    public static void registrarTipo(String tipo, CreadorEquipo creador) {
+        registros.put(tipo.toUpperCase(), creador);
+    }
 
-            default:
-                throw new IllegalArgumentException("Tipo de equipo no válido.");
+    public static EquipoModel crearEquipo(String tipo, int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible) {
+        CreadorEquipo creador = registros.get(tipo.toUpperCase());
+
+        if (creador == null) {
+            throw new IllegalArgumentException("Tipo de equipo no valido.");
         }
+
+        return creador.crear(codigo, descripcion, tarifaDia, disponible);
     }
 }

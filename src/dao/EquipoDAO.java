@@ -24,7 +24,7 @@ public class EquipoDAO {
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setInt(1, equipo.getCodigo());
                 consulta.setString(2, equipo.getDescripcion());
-                consulta.setDouble(3, equipo.getTarifaDia());
+                consulta.setBigDecimal(3, equipo.getTarifaDia());
                 consulta.setBoolean(4, equipo.isDisponible());
                 consulta.setString(5, equipo.getTipo());
 
@@ -51,15 +51,7 @@ public class EquipoDAO {
                  ResultSet resultado = consulta.executeQuery()) {
 
                 while (resultado.next()) {
-                    EquipoModel equipo = EquipoFactory.crearEquipo(
-                            resultado.getString("tipo"),
-                            resultado.getInt("codigo"),
-                            resultado.getString("descripcion"),
-                            resultado.getDouble("tarifa_dia"),
-                            resultado.getBoolean("disponible")
-                    );
-
-                    equipos.add(equipo);
+                    equipos.add(convertirEquipo(resultado));
                 }
             }
 
@@ -68,6 +60,32 @@ public class EquipoDAO {
         }
 
         return equipos;
+    }
+
+    public EquipoModel buscarPorCodigo(int codigo) {
+        String sql = "SELECT * FROM equipos WHERE codigo = ?";
+
+        try (Connection conexion = ConexionBD.conectar()) {
+
+            if (conexion == null) {
+                return null;
+            }
+
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setInt(1, codigo);
+
+                try (ResultSet resultado = consulta.executeQuery()) {
+                    if (resultado.next()) {
+                        return convertirEquipo(resultado);
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al buscar equipo: " + e.getMessage());
+        }
+
+        return null;
     }
 
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
@@ -87,7 +105,7 @@ public class EquipoDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al actualizar equipo: " + e.getMessage());
+            System.out.println("Error al actualizar disponibilidad: " + e.getMessage());
             return false;
         }
     }
@@ -111,5 +129,15 @@ public class EquipoDAO {
             System.out.println("Error al eliminar equipo: " + e.getMessage());
             return false;
         }
+    }
+
+    private EquipoModel convertirEquipo(ResultSet resultado) throws SQLException {
+        return EquipoFactory.crearEquipo(
+                resultado.getString("tipo"),
+                resultado.getInt("codigo"),
+                resultado.getString("descripcion"),
+                resultado.getBigDecimal("tarifa_dia"),
+                resultado.getBoolean("disponible")
+        );
     }
 }
