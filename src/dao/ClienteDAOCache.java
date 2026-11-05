@@ -8,8 +8,8 @@ import java.util.HashMap;
 
 public class ClienteDAOCache implements ClienteRepository {
 
-    private ClienteRepository clienteDAO;
-    private HashMap<String, ClienteModel> cache = new HashMap<>();
+    private final ClienteRepository clienteDAO;
+    private final HashMap<String, ClienteModel> cache = new HashMap<>();
 
     public ClienteDAOCache() {
         this.clienteDAO = new ClienteDAO();

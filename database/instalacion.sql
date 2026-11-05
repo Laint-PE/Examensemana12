@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS equipos (
     descripcion VARCHAR(150) NOT NULL,
     tarifa_dia DECIMAL(10,2) NOT NULL,
     disponible BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT chk_equipo_tarifa
     CHECK (tarifa_dia > 0),
+
     CONSTRAINT fk_equipo_tipo
     FOREIGN KEY (tipo)
     REFERENCES tipos_equipo(tipo)
@@ -41,13 +44,19 @@ CREATE TABLE IF NOT EXISTS alquileres (
     dias INT NOT NULL,
     monto_cobrado DECIMAL(10,2) NOT NULL,
     devuelto BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT chk_alquiler_dias
     CHECK (dias > 0),
+
+    CONSTRAINT chk_alquiler_monto
     CHECK (monto_cobrado >= 0),
+
     CONSTRAINT fk_alquiler_cliente
     FOREIGN KEY (cliente_documento)
     REFERENCES clientes(documento)
     ON UPDATE CASCADE
     ON DELETE RESTRICT,
+
     CONSTRAINT fk_alquiler_equipo
     FOREIGN KEY (equipo_codigo)
     REFERENCES equipos(codigo)

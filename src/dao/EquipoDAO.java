@@ -15,17 +15,17 @@ public class EquipoDAO implements EquipoRepository {
 
     @Override
     public boolean registrar(EquipoModel equipo) {
-        String sql = "INSERT INTO equipos (codigo, descripcion, tarifa_dia, disponible, tipo) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO equipos (codigo, tipo, descripcion, tarifa_dia, disponible) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return false;
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setInt(1, equipo.getCodigo());
-                consulta.setString(2, equipo.getDescripcion());
-                consulta.setBigDecimal(3, equipo.getTarifaDia());
-                consulta.setBoolean(4, equipo.isDisponible());
-                consulta.setString(5, equipo.getTipo());
+                consulta.setString(2, equipo.getTipo());
+                consulta.setString(3, equipo.getDescripcion());
+                consulta.setDouble(4, equipo.getTarifaDia());
+                consulta.setBoolean(5, equipo.isDisponible());
 
                 return consulta.executeUpdate() > 0;
             }
@@ -57,6 +57,30 @@ public class EquipoDAO implements EquipoRepository {
         return equipos;
     }
 
+    @Override
+    public EquipoModel buscarPorCodigo(int codigo) {
+        String sql = "SELECT * FROM equipos WHERE codigo = ?";
+
+        try (Connection conexion = ConexionBD.conectar()) {
+            if (conexion == null) return null;
+
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setInt(1, codigo);
+
+                try (ResultSet resultado = consulta.executeQuery()) {
+                    if (resultado.next()) {
+                        return convertirEquipo(resultado);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al buscar equipo: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    @Override
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
         String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ?";
 
@@ -72,6 +96,30 @@ public class EquipoDAO implements EquipoRepository {
         } catch (SQLException e) {
             System.out.println("Error al actualizar disponibilidad: " + e.getMessage());
             return false;
+        }
+    }
+
+    @Override
+    public boolean actualizarDisponibilidad(Connection conexion, int codigo, boolean disponible)
+            throws SQLException {
+        String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ?";
+
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+            consulta.setBoolean(1, disponible);
+            consulta.setInt(2, codigo);
+
+            return consulta.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean ocuparSiDisponible(Connection conexion, int codigo) throws SQLException {
+        String sql = "UPDATE equipos SET disponible = FALSE WHERE codigo = ? AND disponible = TRUE";
+
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+            consulta.setInt(1, codigo);
+
+            return consulta.executeUpdate() == 1;
         }
     }
 
@@ -98,7 +146,7 @@ public class EquipoDAO implements EquipoRepository {
                 resultado.getString("tipo"),
                 resultado.getInt("codigo"),
                 resultado.getString("descripcion"),
-                resultado.getBigDecimal("tarifa_dia"),
+                resultado.getDouble("tarifa_dia"),
                 resultado.getBoolean("disponible")
         );
     }

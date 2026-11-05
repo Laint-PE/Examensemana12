@@ -83,13 +83,18 @@ public class ClienteDAO implements ClienteRepository {
 
         if (nombre == null || nombre.trim().isEmpty()) return clientes;
 
-        String sql = "SELECT * FROM clientes WHERE nombre LIKE ? ORDER BY nombre";
+        String texto = nombre.trim()
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_");
+
+        String sql = "SELECT * FROM clientes WHERE nombre LIKE ? ESCAPE '!' ORDER BY nombre";
 
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return clientes;
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-                consulta.setString(1, "%" + nombre.trim() + "%");
+                consulta.setString(1, "%" + texto + "%");
 
                 try (ResultSet resultado = consulta.executeQuery()) {
                     while (resultado.next()) {
@@ -113,6 +118,7 @@ public class ClienteDAO implements ClienteRepository {
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setString(1, documento);
+
                 return consulta.executeUpdate() > 0;
             }
         } catch (SQLException e) {
