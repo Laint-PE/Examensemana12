@@ -1,22 +1,21 @@
+
 package models;
 
-public abstract class EquipoModel {
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
+public abstract class EquipoModel {
     private int codigo;
     private String descripcion;
-    private double tarifaDia;
+    private BigDecimal tarifaDia;
     private boolean disponible;
 
-    public EquipoModel(int codigo, String descripcion, double tarifaDia, boolean disponible) {
+    public EquipoModel(int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible) {
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.tarifaDia = tarifaDia;
         this.disponible = disponible;
     }
-
-    public abstract double calcularMonto(int dias);
-
-    public abstract String getTipo();
 
     public int getCodigo() {
         return codigo;
@@ -26,7 +25,7 @@ public abstract class EquipoModel {
         return descripcion;
     }
 
-    public double getTarifaDia() {
+    public BigDecimal getTarifaDia() {
         return tarifaDia;
     }
 
@@ -38,7 +37,11 @@ public abstract class EquipoModel {
         this.disponible = disponible;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    protected BigDecimal redondear(BigDecimal monto) {
+        return monto.setScale(2, RoundingMode.HALF_UP);
     }
+
+    public abstract BigDecimal calcularMonto(int dias);
+
+    public abstract String getTipo();
 }

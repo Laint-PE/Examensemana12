@@ -3,24 +3,14 @@ package controllers;
 
 import dao.AlquilerDAO;
 import models.AlquilerModel;
-import models.EquipoModel;
 import java.util.ArrayList;
 
 public class AlquilerController {
 
     private AlquilerDAO alquilerDAO = new AlquilerDAO();
 
-    public double calcularMonto(EquipoModel equipo, int dias) {
-        if (equipo == null || dias <= 0) {
-            return 0;
-        }
-
-        return equipo.calcularMonto(dias);
-    }
-
     public boolean registrar(AlquilerModel alquiler) {
-        if (alquiler == null || alquiler.getCliente() == null ||
-                alquiler.getEquipo() == null || alquiler.getFechaInicio() == null) {
+        if (alquiler == null || alquiler.getCliente() == null || alquiler.getEquipo() == null) {
             return false;
         }
 
@@ -36,30 +26,10 @@ public class AlquilerController {
     }
 
     public AlquilerModel buscarPorId(int id) {
-        if (id <= 0) {
-            return null;
-        }
-
         return alquilerDAO.buscarPorId(id);
     }
 
     public boolean actualizarDevolucion(int id, boolean devuelto) {
-        if (id <= 0 || !devuelto) {
-            return false;
-        }
-
         return alquilerDAO.actualizarDevolucion(id, devuelto);
-    }
-
-    public ArrayList<AlquilerModel> listarPendientes() {
-        return alquilerDAO.listarPendientes();
-    }
-
-    public ArrayList<String> reporteMensual(int mes, int anio) {
-        if (mes < 1 || mes > 12 || anio < 1) {
-            return new ArrayList<>();
-        }
-
-        return alquilerDAO.reporteMensual(mes, anio);
     }
 }

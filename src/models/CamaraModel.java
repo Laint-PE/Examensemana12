@@ -1,16 +1,19 @@
 
 package models;
 
+import java.math.BigDecimal;
+
 public class CamaraModel extends EquipoModel {
 
-    public CamaraModel(int codigo, String descripcion, double tarifaDia, boolean disponible) {
+    public CamaraModel(int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible) {
         super(codigo, descripcion, tarifaDia, disponible);
     }
 
     @Override
-    public double calcularMonto(int dias) {
-        double subtotal = getTarifaDia() * dias;
-        return subtotal * 1.15;
+    public BigDecimal calcularMonto(int dias) {
+        BigDecimal monto = getTarifaDia().multiply(BigDecimal.valueOf(dias));
+        monto = monto.multiply(new BigDecimal("1.15"));
+        return redondear(monto);
     }
 
     @Override

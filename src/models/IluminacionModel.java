@@ -1,21 +1,23 @@
 
 package models;
 
+import java.math.BigDecimal;
+
 public class IluminacionModel extends EquipoModel {
 
-    public IluminacionModel(int codigo, String descripcion, double tarifaDia, boolean disponible) {
+    public IluminacionModel(int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible) {
         super(codigo, descripcion, tarifaDia, disponible);
     }
 
     @Override
-    public double calcularMonto(int dias) {
-        double subtotal = getTarifaDia() * dias;
+    public BigDecimal calcularMonto(int dias) {
+        BigDecimal monto = getTarifaDia().multiply(BigDecimal.valueOf(dias));
 
         if (dias > 5) {
-            subtotal *= 0.90;
+            monto = monto.multiply(new BigDecimal("0.90"));
         }
 
-        return subtotal;
+        return redondear(monto);
     }
 
     @Override
