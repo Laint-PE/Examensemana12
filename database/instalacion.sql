@@ -4,19 +4,19 @@ USE equipaya;
 
 CREATE TABLE IF NOT EXISTS tipos_equipo (
                                             tipo VARCHAR(30) PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL
+    descripcion VARCHAR(100) NOT NULL,
+    orden INT NOT NULL UNIQUE
     ) ENGINE=InnoDB;
 
-INSERT IGNORE INTO tipos_equipo (tipo, descripcion) VALUES
-('CAMARA', 'Equipos de grabacion'),
-('AUDIO', 'Equipos de sonido'),
-('ILUMINACION', 'Equipos de iluminacion');
+INSERT IGNORE INTO tipos_equipo (tipo, descripcion, orden) VALUES
+('CAMARA', 'Equipos de grabacion', 1),
+('ILUMINACION', 'Equipos de iluminacion', 2),
+('AUDIO', 'Equipos de sonido', 3);
 
 CREATE TABLE IF NOT EXISTS clientes (
                                         documento VARCHAR(11) PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    telefono VARCHAR(15) NOT NULL,
-    CHECK (documento REGEXP '^[0-9]{8}([0-9]{3})?$')
+    telefono VARCHAR(15) NOT NULL
     ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS equipos (
@@ -54,14 +54,3 @@ CREATE TABLE IF NOT EXISTS alquileres (
     ON UPDATE CASCADE
     ON DELETE RESTRICT
     ) ENGINE=InnoDB;
-
-INSERT IGNORE INTO clientes (documento, nombre, telefono) VALUES
-('12345678', 'Carlos Ramirez', '987654321'),
-('87654321', 'Maria Torres', '912345678'),
-('20123456789', 'Empresa Audiovisual SAC', '955444333');
-
-INSERT IGNORE INTO equipos
-(codigo, tipo, descripcion, tarifa_dia, disponible) VALUES
-(101, 'CAMARA', 'Camara profesional Sony', 150.00, TRUE),
-(102, 'AUDIO', 'Sistema de sonido profesional', 100.00, TRUE),
-(103, 'ILUMINACION', 'Kit de iluminacion LED', 80.00, TRUE);

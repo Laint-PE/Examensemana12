@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public abstract class EquipoModel {
+
     private int codigo;
     private String descripcion;
     private BigDecimal tarifaDia;
