@@ -3,10 +3,6 @@ package controllers;
 
 import dao.AlquilerDAO;
 import models.AlquilerModel;
-import models.EquipoModel;
-import repositories.AlquilerRepository;
-import services.AlquilerService;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class AlquilerController {
@@ -38,30 +34,10 @@ public class AlquilerController {
     }
 
     public AlquilerModel buscarPorId(int id) {
-        if (id <= 0) {
-            return null;
-        }
-
-        return alquilerRepository.buscarPorId(id);
+        return alquilerDAO.buscarPorId(id);
     }
 
     public boolean actualizarDevolucion(int id, boolean devuelto) {
-        if (id <= 0 || !devuelto) {
-            return false;
-        }
-
-        return alquilerService.devolver(id);
-    }
-
-    public ArrayList<AlquilerModel> listarPendientes() {
-        return alquilerRepository.listarPendientes();
-    }
-
-    public ArrayList<String> reporteMensual(int mes, int anio) {
-        if (mes < 1 || mes > 12 || anio < 1) {
-            return new ArrayList<>();
-        }
-
-        return alquilerRepository.reporteMensual(mes, anio);
+        return alquilerDAO.actualizarDevolucion(id, devuelto);
     }
 }

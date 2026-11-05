@@ -3,8 +3,6 @@ package controllers;
 
 import dao.EquipoDAO;
 import models.EquipoModel;
-import repositories.EquipoRepository;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class EquipoController {
@@ -33,6 +31,14 @@ public class EquipoController {
         }
 
         return equipoRepository.buscarPorCodigo(codigo);
+    }
+
+    public EquipoModel buscarPorCodigo(int codigo) {
+        if (codigo <= 0) {
+            return null;
+        }
+
+        return equipoDAO.buscarPorCodigo(codigo);
     }
 
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {

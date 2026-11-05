@@ -12,13 +12,16 @@ import java.sql.SQLException;
 
 public class AlquilerService {
 
-    private AlquilerRepository alquilerRepository = new AlquilerDAO();
 
     public boolean registrar(AlquilerModel alquiler) {
         String sql = "UPDATE equipos SET disponible = FALSE WHERE codigo = ? AND disponible = TRUE";
 
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return false;
+
+            if (conexion == null) {
+                return false;
+            }
 
             conexion.setAutoCommit(false);
 
@@ -32,7 +35,6 @@ public class AlquilerService {
                     }
                 }
 
-                if (!alquilerRepository.registrar(conexion, alquiler)) {
                     conexion.rollback();
                     return false;
                 }
@@ -58,6 +60,10 @@ public class AlquilerService {
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return false;
 
+            if (conexion == null) {
+                return false;
+            }
+
             conexion.setAutoCommit(false);
 
             try {
@@ -76,7 +82,6 @@ public class AlquilerService {
                     }
                 }
 
-                if (!alquilerRepository.actualizarDevolucion(conexion, id)) {
                     conexion.rollback();
                     return false;
                 }

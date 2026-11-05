@@ -42,17 +42,33 @@ public class AlquilerDAO implements AlquilerRepository {
         }
     }
 
-    @Override
-    public boolean actualizarDevolucion(Connection conexion, int id) throws SQLException {
-        String sql = "UPDATE alquileres SET devuelto = TRUE WHERE id = ? AND devuelto = FALSE";
+                try (PreparedStatement insertar = conexion.prepareStatement(insertarAlquiler)) {
+                    insertar.setString(1, alquiler.getCliente().getDocumento());
+                    insertar.setInt(2, alquiler.getEquipo().getCodigo());
+                    insertar.setDate(3, java.sql.Date.valueOf(alquiler.getFechaInicio()));
+                    insertar.setInt(4, alquiler.getDias());
+                    insertar.setDouble(5, alquiler.getMontoCobrado());
 
-        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-            consulta.setInt(1, id);
-            return consulta.executeUpdate() > 0;
+                    if (insertar.executeUpdate() == 0) {
+                        conexion.rollback();
+                        return false;
+                    }
+                }
+
+                conexion.commit();
+                return true;
+
+            } catch (SQLException e) {
+                conexion.rollback();
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al registrar alquiler: " + e.getMessage());
+            return false;
         }
     }
 
-    @Override
     public ArrayList<AlquilerModel> listar() {
         ArrayList<AlquilerModel> alquileres = new ArrayList<>();
         String sql = consultaBase + "ORDER BY a.fecha_inicio DESC, a.id DESC";
@@ -97,7 +113,72 @@ public class AlquilerDAO implements AlquilerRepository {
         return null;
     }
 
-    @Override
+    public boolean actualizarDevolucion(int id, boolean devuelto) {
+        String buscar = "SELECT equipo_codigo, devuelto FROM alquileres WHERE id = ? FOR UPDATE";
+        String actualizarAlquiler = "UPDATE alquileres SET devuelto = TRUE WHERE id = ?";
+        String actualizarEquipo = "UPDATE equipos SET disponible = TRUE WHERE codigo = ?";
+
+        try (Connection conexion = ConexionBD.conectar()) {
+
+            if (conexion == null) {
+                return false;
+            }
+
+            try {
+                conexion.setAutoCommit(false);
+
+                int codigoEquipo;
+
+                try (PreparedStatement consulta = conexion.prepareStatement(buscar)) {
+                    consulta.setInt(1, id);
+
+                    try (ResultSet resultado = consulta.executeQuery()) {
+                        if (!resultado.next() || resultado.getBoolean("devuelto")) {
+                            conexion.rollback();
+                            return false;
+                        }
+
+                        codigoEquipo = resultado.getInt("equipo_codigo");
+                    }
+                }
+
+                if (!devuelto) {
+                    conexion.rollback();
+                    return false;
+                }
+
+                try (PreparedStatement actualizar = conexion.prepareStatement(actualizarAlquiler)) {
+                    actualizar.setInt(1, id);
+
+                    if (actualizar.executeUpdate() == 0) {
+                        conexion.rollback();
+                        return false;
+                    }
+                }
+
+                try (PreparedStatement actualizar = conexion.prepareStatement(actualizarEquipo)) {
+                    actualizar.setInt(1, codigoEquipo);
+
+                    if (actualizar.executeUpdate() == 0) {
+                        conexion.rollback();
+                        return false;
+                    }
+                }
+
+                conexion.commit();
+                return true;
+
+            } catch (SQLException e) {
+                conexion.rollback();
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al registrar devolucion: " + e.getMessage());
+            return false;
+        }
+    }
+
     public ArrayList<AlquilerModel> listarPendientes() {
         ArrayList<AlquilerModel> alquileres = new ArrayList<>();
         String sql = consultaBase +

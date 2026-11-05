@@ -57,30 +57,6 @@ public class EquipoDAO implements EquipoRepository {
         return equipos;
     }
 
-    @Override
-    public EquipoModel buscarPorCodigo(int codigo) {
-        String sql = "SELECT * FROM equipos WHERE codigo = ?";
-
-        try (Connection conexion = ConexionBD.conectar()) {
-            if (conexion == null) return null;
-
-            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-                consulta.setInt(1, codigo);
-
-                try (ResultSet resultado = consulta.executeQuery()) {
-                    if (resultado.next()) {
-                        return convertirEquipo(resultado);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al buscar equipo: " + e.getMessage());
-        }
-
-        return null;
-    }
-
-    @Override
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
         String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ?";
 
