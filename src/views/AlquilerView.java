@@ -1,3 +1,4 @@
+
 package views;
 
 import controllers.AlquilerController;
@@ -235,9 +236,7 @@ public class AlquilerView {
         System.out.println("\n===== ALQUILER =====");
         System.out.println("ID: " + alquiler.getId());
         System.out.println("Cliente: " + alquiler.getCliente().getNombre());
-        System.out.println("Documento: " + alquiler.getCliente().getDocumento());
         System.out.println("Equipo: " + alquiler.getEquipo().getDescripcion());
-        System.out.println("Codigo: " + alquiler.getEquipo().getCodigo());
         System.out.println("Fecha de inicio: " + alquiler.getFechaInicio());
         System.out.println("Dias: " + alquiler.getDias());
         System.out.println("Monto: S/ " + alquiler.getMontoCobrado().toPlainString());
