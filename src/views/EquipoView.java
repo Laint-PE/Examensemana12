@@ -4,6 +4,7 @@ package views;
 import controllers.EquipoController;
 import models.EquipoModel;
 import models.EquipoFactory;
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class EquipoView {
@@ -92,9 +93,9 @@ public class EquipoView {
             String descripcion = scanner.nextLine();
 
             System.out.print("Tarifa por dia: ");
-            double tarifa = Double.parseDouble(scanner.nextLine());
+            BigDecimal tarifa = new BigDecimal(scanner.nextLine());
 
-            if (descripcion.trim().isEmpty() || tarifa <= 0) {
+            if (descripcion.trim().isEmpty() || tarifa.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Ingrese datos validos.");
                 return;
             }

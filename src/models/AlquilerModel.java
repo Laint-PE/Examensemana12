@@ -1,6 +1,7 @@
 
 package models;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class AlquilerModel {
@@ -10,10 +11,10 @@ public class AlquilerModel {
     private EquipoModel equipo;
     private LocalDate fechaInicio;
     private int dias;
-    private double montoCobrado;
+    private BigDecimal montoCobrado;
     private boolean devuelto;
 
-    public AlquilerModel(int id, ClienteModel cliente, EquipoModel equipo, LocalDate fechaInicio, int dias, double montoCobrado, boolean devuelto) {
+    public AlquilerModel(int id, ClienteModel cliente, EquipoModel equipo, LocalDate fechaInicio, int dias, BigDecimal montoCobrado, boolean devuelto) {
         this.id = id;
         this.cliente = cliente;
         this.equipo = equipo;
@@ -43,7 +44,7 @@ public class AlquilerModel {
         return dias;
     }
 
-    public double getMontoCobrado() {
+    public BigDecimal getMontoCobrado() {
         return montoCobrado;
     }
 

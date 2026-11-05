@@ -1,13 +1,14 @@
 
 package controllers;
 
-import dao.ClienteDAO;
+import dao.ClienteDAOCache;
 import models.ClienteModel;
+import repositories.ClienteRepository;
 import java.util.ArrayList;
 
 public class ClienteController {
 
-    private ClienteDAO clienteDAO = new ClienteDAO();
+    private ClienteRepository clienteRepository = new ClienteDAOCache();
 
     public boolean registrar(ClienteModel cliente) {
         if (cliente == null || cliente.getDocumento() == null) {
@@ -24,11 +25,11 @@ public class ClienteController {
             return false;
         }
 
-        return clienteDAO.registrar(cliente);
+        return clienteRepository.registrar(cliente);
     }
 
     public ArrayList<ClienteModel> listar() {
-        return clienteDAO.listar();
+        return clienteRepository.listar();
     }
 
     public ClienteModel buscarPorDocumento(String documento) {
@@ -36,7 +37,7 @@ public class ClienteController {
             return null;
         }
 
-        return clienteDAO.buscarPorDocumento(documento);
+        return clienteRepository.buscarPorDocumento(documento);
     }
 
     public ArrayList<ClienteModel> buscarPorNombre(String nombre) {
@@ -44,7 +45,7 @@ public class ClienteController {
             return new ArrayList<>();
         }
 
-        return clienteDAO.buscarPorNombre(nombre);
+        return clienteRepository.buscarPorNombre(nombre);
     }
 
     public boolean eliminar(String documento) {
@@ -52,6 +53,6 @@ public class ClienteController {
             return false;
         }
 
-        return clienteDAO.eliminar(documento);
+        return clienteRepository.eliminar(documento);
     }
 }

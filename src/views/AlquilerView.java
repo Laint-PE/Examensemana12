@@ -7,6 +7,7 @@ import controllers.EquipoController;
 import models.AlquilerModel;
 import models.ClienteModel;
 import models.EquipoModel;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -86,14 +87,7 @@ public class AlquilerView {
             System.out.print("Codigo del equipo: ");
             int codigo = Integer.parseInt(scanner.nextLine());
 
-            EquipoModel equipo = null;
-
-            for (EquipoModel elemento : equipoController.listar()) {
-                if (elemento.getCodigo() == codigo) {
-                    equipo = elemento;
-                    break;
-                }
-            }
+            EquipoModel equipo = equipoController.buscarPorCodigo(codigo);
 
             if (equipo == null) {
                 System.out.println("El equipo no existe.");
@@ -113,7 +107,7 @@ public class AlquilerView {
                 return;
             }
 
-            double monto = alquilerController.calcularMonto(equipo, dias);
+            BigDecimal monto = alquilerController.calcularMonto(equipo, dias);
 
             System.out.println("Monto del alquiler: S/ " + monto);
             System.out.print("¿Desea confirmar el alquiler? (1. Si / 2. No): ");

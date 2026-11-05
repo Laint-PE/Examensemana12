@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS tipos_equipo (
 INSERT IGNORE INTO tipos_equipo (tipo, descripcion) VALUES
 ('CAMARA', 'Equipos de grabacion'),
 ('AUDIO', 'Equipos de sonido'),
-('ILUMINACION', 'Equipos de iluminacion'),
-('DRON', 'Equipos aereos');
+('ILUMINACION', 'Equipos de iluminacion');
 
 CREATE TABLE IF NOT EXISTS clientes (
                                         documento VARCHAR(11) PRIMARY KEY,
@@ -65,5 +64,4 @@ INSERT IGNORE INTO equipos
 (codigo, tipo, descripcion, tarifa_dia, disponible) VALUES
 (101, 'CAMARA', 'Camara profesional Sony', 150.00, TRUE),
 (102, 'AUDIO', 'Sistema de sonido profesional', 100.00, TRUE),
-(103, 'ILUMINACION', 'Kit de iluminacion LED', 80.00, TRUE),
-(104, 'DRON', 'Dron profesional', 200.00, TRUE);
+(103, 'ILUMINACION', 'Kit de iluminacion LED', 80.00, TRUE);

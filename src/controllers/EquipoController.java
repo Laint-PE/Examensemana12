@@ -3,25 +3,36 @@ package controllers;
 
 import dao.EquipoDAO;
 import models.EquipoModel;
+import repositories.EquipoRepository;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class EquipoController {
 
-    private EquipoDAO equipoDAO = new EquipoDAO();
+    private EquipoRepository equipoRepository = new EquipoDAO();
 
     public boolean registrar(EquipoModel equipo) {
         if (equipo == null || equipo.getCodigo() <= 0 ||
                 equipo.getDescripcion() == null ||
                 equipo.getDescripcion().trim().isEmpty() ||
-                equipo.getTarifaDia() <= 0) {
+                equipo.getTarifaDia() == null ||
+                equipo.getTarifaDia().compareTo(BigDecimal.ZERO) <= 0) {
             return false;
         }
 
-        return equipoDAO.registrar(equipo);
+        return equipoRepository.registrar(equipo);
     }
 
     public ArrayList<EquipoModel> listar() {
-        return equipoDAO.listar();
+        return equipoRepository.listar();
+    }
+
+    public EquipoModel buscarPorCodigo(int codigo) {
+        if (codigo <= 0) {
+            return null;
+        }
+
+        return equipoRepository.buscarPorCodigo(codigo);
     }
 
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
@@ -29,7 +40,7 @@ public class EquipoController {
             return false;
         }
 
-        return equipoDAO.actualizarDisponibilidad(codigo, disponible);
+        return equipoRepository.actualizarDisponibilidad(codigo, disponible);
     }
 
     public boolean eliminar(int codigo) {
@@ -37,6 +48,6 @@ public class EquipoController {
             return false;
         }
 
-        return equipoDAO.eliminar(codigo);
+        return equipoRepository.eliminar(codigo);
     }
 }

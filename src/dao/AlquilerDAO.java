@@ -6,13 +6,16 @@ import models.AlquilerModel;
 import models.ClienteModel;
 import models.EquipoModel;
 import models.EquipoFactory;
+import repositories.AlquilerRepository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class AlquilerDAO {
+public class AlquilerDAO implements AlquilerRepository {
 
     private String consultaBase =
             "SELECT a.id AS alquiler_id, a.fecha_inicio, a.dias, " +
@@ -24,70 +27,38 @@ public class AlquilerDAO {
                     "INNER JOIN clientes c ON a.cliente_documento = c.documento " +
                     "INNER JOIN equipos e ON a.equipo_codigo = e.codigo ";
 
-    public boolean registrar(AlquilerModel alquiler) {
-        String actualizarEquipo =
-                "UPDATE equipos SET disponible = FALSE " +
-                        "WHERE codigo = ? AND disponible = TRUE";
+    @Override
+    public boolean registrar(Connection conexion, AlquilerModel alquiler) throws SQLException {
+        String sql = "INSERT INTO alquileres (cliente_documento, equipo_codigo, fecha_inicio, dias, monto_cobrado, devuelto) VALUES (?, ?, ?, ?, ?, FALSE)";
 
-        String insertarAlquiler =
-                "INSERT INTO alquileres " +
-                        "(cliente_documento, equipo_codigo, fecha_inicio, dias, monto_cobrado, devuelto) " +
-                        "VALUES (?, ?, ?, ?, ?, FALSE)";
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+            consulta.setString(1, alquiler.getCliente().getDocumento());
+            consulta.setInt(2, alquiler.getEquipo().getCodigo());
+            consulta.setDate(3, java.sql.Date.valueOf(alquiler.getFechaInicio()));
+            consulta.setInt(4, alquiler.getDias());
+            consulta.setBigDecimal(5, alquiler.getMontoCobrado());
 
-        try (Connection conexion = ConexionBD.conectar()) {
-
-            if (conexion == null) {
-                return false;
-            }
-
-            try {
-                conexion.setAutoCommit(false);
-
-                try (PreparedStatement actualizar = conexion.prepareStatement(actualizarEquipo)) {
-                    actualizar.setInt(1, alquiler.getEquipo().getCodigo());
-
-                    if (actualizar.executeUpdate() == 0) {
-                        conexion.rollback();
-                        return false;
-                    }
-                }
-
-                try (PreparedStatement insertar = conexion.prepareStatement(insertarAlquiler)) {
-                    insertar.setString(1, alquiler.getCliente().getDocumento());
-                    insertar.setInt(2, alquiler.getEquipo().getCodigo());
-                    insertar.setDate(3, java.sql.Date.valueOf(alquiler.getFechaInicio()));
-                    insertar.setInt(4, alquiler.getDias());
-                    insertar.setDouble(5, alquiler.getMontoCobrado());
-
-                    if (insertar.executeUpdate() == 0) {
-                        conexion.rollback();
-                        return false;
-                    }
-                }
-
-                conexion.commit();
-                return true;
-
-            } catch (SQLException e) {
-                conexion.rollback();
-                throw e;
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al registrar alquiler: " + e.getMessage());
-            return false;
+            return consulta.executeUpdate() > 0;
         }
     }
 
+    @Override
+    public boolean actualizarDevolucion(Connection conexion, int id) throws SQLException {
+        String sql = "UPDATE alquileres SET devuelto = TRUE WHERE id = ? AND devuelto = FALSE";
+
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+            consulta.setInt(1, id);
+            return consulta.executeUpdate() > 0;
+        }
+    }
+
+    @Override
     public ArrayList<AlquilerModel> listar() {
         ArrayList<AlquilerModel> alquileres = new ArrayList<>();
         String sql = consultaBase + "ORDER BY a.fecha_inicio DESC, a.id DESC";
 
         try (Connection conexion = ConexionBD.conectar()) {
-
-            if (conexion == null) {
-                return alquileres;
-            }
+            if (conexion == null) return alquileres;
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql);
                  ResultSet resultado = consulta.executeQuery()) {
@@ -96,7 +67,6 @@ public class AlquilerDAO {
                     alquileres.add(convertirAlquiler(resultado));
                 }
             }
-
         } catch (SQLException e) {
             System.out.println("Error al listar alquileres: " + e.getMessage());
         }
@@ -104,14 +74,12 @@ public class AlquilerDAO {
         return alquileres;
     }
 
+    @Override
     public AlquilerModel buscarPorId(int id) {
         String sql = consultaBase + "WHERE a.id = ?";
 
         try (Connection conexion = ConexionBD.conectar()) {
-
-            if (conexion == null) {
-                return null;
-            }
+            if (conexion == null) return null;
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setInt(1, id);
@@ -122,7 +90,6 @@ public class AlquilerDAO {
                     }
                 }
             }
-
         } catch (SQLException e) {
             System.out.println("Error al buscar alquiler: " + e.getMessage());
         }
@@ -130,72 +97,7 @@ public class AlquilerDAO {
         return null;
     }
 
-    public boolean actualizarDevolucion(int id, boolean devuelto) {
-        String buscar = "SELECT equipo_codigo, devuelto FROM alquileres WHERE id = ? FOR UPDATE";
-        String actualizarAlquiler = "UPDATE alquileres SET devuelto = TRUE WHERE id = ?";
-        String actualizarEquipo = "UPDATE equipos SET disponible = TRUE WHERE codigo = ?";
-
-        try (Connection conexion = ConexionBD.conectar()) {
-
-            if (conexion == null) {
-                return false;
-            }
-
-            try {
-                conexion.setAutoCommit(false);
-
-                int codigoEquipo;
-
-                try (PreparedStatement consulta = conexion.prepareStatement(buscar)) {
-                    consulta.setInt(1, id);
-
-                    try (ResultSet resultado = consulta.executeQuery()) {
-                        if (!resultado.next() || resultado.getBoolean("devuelto")) {
-                            conexion.rollback();
-                            return false;
-                        }
-
-                        codigoEquipo = resultado.getInt("equipo_codigo");
-                    }
-                }
-
-                if (!devuelto) {
-                    conexion.rollback();
-                    return false;
-                }
-
-                try (PreparedStatement actualizar = conexion.prepareStatement(actualizarAlquiler)) {
-                    actualizar.setInt(1, id);
-
-                    if (actualizar.executeUpdate() == 0) {
-                        conexion.rollback();
-                        return false;
-                    }
-                }
-
-                try (PreparedStatement actualizar = conexion.prepareStatement(actualizarEquipo)) {
-                    actualizar.setInt(1, codigoEquipo);
-
-                    if (actualizar.executeUpdate() == 0) {
-                        conexion.rollback();
-                        return false;
-                    }
-                }
-
-                conexion.commit();
-                return true;
-
-            } catch (SQLException e) {
-                conexion.rollback();
-                throw e;
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al registrar devolucion: " + e.getMessage());
-            return false;
-        }
-    }
-
+    @Override
     public ArrayList<AlquilerModel> listarPendientes() {
         ArrayList<AlquilerModel> alquileres = new ArrayList<>();
         String sql = consultaBase +
@@ -203,10 +105,7 @@ public class AlquilerDAO {
                 "ORDER BY a.fecha_inicio ASC, a.id ASC";
 
         try (Connection conexion = ConexionBD.conectar()) {
-
-            if (conexion == null) {
-                return alquileres;
-            }
+            if (conexion == null) return alquileres;
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql);
                  ResultSet resultado = consulta.executeQuery()) {
@@ -215,7 +114,6 @@ public class AlquilerDAO {
                     alquileres.add(convertirAlquiler(resultado));
                 }
             }
-
         } catch (SQLException e) {
             System.out.println("Error al listar alquileres pendientes: " + e.getMessage());
         }
@@ -223,6 +121,7 @@ public class AlquilerDAO {
         return alquileres;
     }
 
+    @Override
     public ArrayList<String> reporteMensual(int mes, int anio) {
         ArrayList<String> reporte = new ArrayList<>();
 
@@ -230,29 +129,32 @@ public class AlquilerDAO {
                 "SELECT e.tipo, SUM(a.monto_cobrado) AS total " +
                         "FROM alquileres a " +
                         "INNER JOIN equipos e ON a.equipo_codigo = e.codigo " +
-                        "WHERE MONTH(a.fecha_inicio) = ? AND YEAR(a.fecha_inicio) = ? " +
+                        "WHERE a.fecha_inicio >= ? AND a.fecha_inicio < ? " +
                         "GROUP BY e.tipo ORDER BY e.tipo";
 
-        try (Connection conexion = ConexionBD.conectar()) {
+        try {
+            LocalDate inicio = LocalDate.of(anio, mes, 1);
+            LocalDate fin = inicio.plusMonths(1);
 
-            if (conexion == null) {
-                return reporte;
-            }
+            try (Connection conexion = ConexionBD.conectar()) {
+                if (conexion == null) return reporte;
 
-            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-                consulta.setInt(1, mes);
-                consulta.setInt(2, anio);
+                try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                    consulta.setDate(1, java.sql.Date.valueOf(inicio));
+                    consulta.setDate(2, java.sql.Date.valueOf(fin));
 
-                try (ResultSet resultado = consulta.executeQuery()) {
-                    while (resultado.next()) {
-                        reporte.add(
-                                resultado.getString("tipo") + ": S/ " +
-                                        resultado.getBigDecimal("total")
-                        );
+                    try (ResultSet resultado = consulta.executeQuery()) {
+                        while (resultado.next()) {
+                            reporte.add(
+                                    resultado.getString("tipo") + ": S/ " +
+                                            resultado.getBigDecimal("total")
+                            );
+                        }
                     }
                 }
             }
-
+        } catch (DateTimeException e) {
+            System.out.println("Fecha del reporte no valida.");
         } catch (SQLException e) {
             System.out.println("Error al generar reporte: " + e.getMessage());
         }
@@ -271,7 +173,7 @@ public class AlquilerDAO {
                 resultado.getString("tipo"),
                 resultado.getInt("equipo_codigo"),
                 resultado.getString("descripcion"),
-                resultado.getDouble("tarifa_dia"),
+                resultado.getBigDecimal("tarifa_dia"),
                 resultado.getBoolean("disponible")
         );
 
@@ -281,7 +183,7 @@ public class AlquilerDAO {
                 equipo,
                 resultado.getDate("fecha_inicio").toLocalDate(),
                 resultado.getInt("dias"),
-                resultado.getDouble("monto_cobrado"),
+                resultado.getBigDecimal("monto_cobrado"),
                 resultado.getBoolean("devuelto")
         );
     }
