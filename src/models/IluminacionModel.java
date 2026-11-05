@@ -1,27 +1,23 @@
-
 package models;
-
-import java.math.BigDecimal;
 
 public class IluminacionModel extends EquipoModel {
 
-    public IluminacionModel(int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible) {
+    private static final int DIAS_PARA_DESCUENTO = 5;
+    private static final double DESCUENTO = 0.10;
+
+    public IluminacionModel(int codigo, String descripcion, double tarifaDia, boolean disponible) {
         super(codigo, descripcion, tarifaDia, disponible);
     }
 
     @Override
-    public BigDecimal calcularMonto(int dias) {
-        BigDecimal monto = getTarifaDia().multiply(BigDecimal.valueOf(dias));
-
-        if (dias > 5) {
-            monto = monto.multiply(new BigDecimal("0.90"));
+    public double calcularMonto(int dias) {
+        double subtotal = getTarifaDia() * dias;
+        if (dias > DIAS_PARA_DESCUENTO) {
+            subtotal *= (1 - DESCUENTO);
         }
-
-        return redondear(monto);
+        return subtotal;
     }
 
     @Override
-    public String getTipo() {
-        return "ILUMINACION";
-    }
+    public String getTipo() { return "ILUMINACION"; }
 }

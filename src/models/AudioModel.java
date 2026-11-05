@@ -1,23 +1,18 @@
-
 package models;
-
-import java.math.BigDecimal;
 
 public class AudioModel extends EquipoModel {
 
-    public AudioModel(int codigo, String descripcion, BigDecimal tarifaDia, boolean disponible) {
+    private static final int DIAS_MINIMOS = 2;
+
+    public AudioModel(int codigo, String descripcion, double tarifaDia, boolean disponible) {
         super(codigo, descripcion, tarifaDia, disponible);
     }
 
     @Override
-    public BigDecimal calcularMonto(int dias) {
-        int diasAlquiler = Math.max(dias, 2);
-        BigDecimal monto = getTarifaDia().multiply(BigDecimal.valueOf(diasAlquiler));
-        return redondear(monto);
+    public double calcularMonto(int dias) {
+        return getTarifaDia() * Math.max(dias, DIAS_MINIMOS);
     }
 
     @Override
-    public String getTipo() {
-        return "AUDIO";
-    }
+    public String getTipo() { return "AUDIO"; }
 }

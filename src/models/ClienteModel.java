@@ -1,11 +1,10 @@
-
 package models;
 
 public class ClienteModel {
 
-    private String documento;
-    private String nombre;
-    private String telefono;
+    private final String documento;   // DNI (8) o RUC (11)
+    private final String nombre;
+    private final String telefono;
 
     public ClienteModel(String documento, String nombre, String telefono) {
         this.documento = documento;
@@ -13,15 +12,7 @@ public class ClienteModel {
         this.telefono = telefono;
     }
 
-    public String getDocumento() {
-        return documento;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
+    public String getDocumento() { return documento; }
+    public String getNombre() { return nombre; }
+    public String getTelefono() { return telefono; }
 }
