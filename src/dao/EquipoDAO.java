@@ -1,3 +1,4 @@
+
 package dao;
 
 import config.ConexionBD;
@@ -14,17 +15,21 @@ public class EquipoDAO {
     public boolean registrar(EquipoModel equipo, String tipo) {
         String sql = "INSERT INTO equipos (codigo, descripcion, tarifa_dia, disponible, tipo) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conexion = ConexionBD.conectar();
-             PreparedStatement consulta = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionBD.conectar()) {
 
-            consulta.setInt(1, equipo.getCodigo());
-            consulta.setString(2, equipo.getDescripcion());
-            consulta.setDouble(3, equipo.getTarifaDia());
-            consulta.setBoolean(4, equipo.isDisponible());
-            consulta.setString(5, tipo);
+            if (conexion == null) {
+                return false;
+            }
 
-            consulta.executeUpdate();
-            return true;
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setInt(1, equipo.getCodigo());
+                consulta.setString(2, equipo.getDescripcion());
+                consulta.setDouble(3, equipo.getTarifaDia());
+                consulta.setBoolean(4, equipo.isDisponible());
+                consulta.setString(5, tipo.toUpperCase());
+
+                return consulta.executeUpdate() > 0;
+            }
 
         } catch (SQLException e) {
             System.out.println("Error al registrar equipo: " + e.getMessage());
@@ -36,20 +41,26 @@ public class EquipoDAO {
         ArrayList<EquipoModel> equipos = new ArrayList<>();
         String sql = "SELECT * FROM equipos";
 
-        try (Connection conexion = ConexionBD.conectar();
-             PreparedStatement consulta = conexion.prepareStatement(sql);
-             ResultSet resultado = consulta.executeQuery()) {
+        try (Connection conexion = ConexionBD.conectar()) {
 
-            while (resultado.next()) {
-                EquipoModel equipo = EquipoFactory.crearEquipo(
-                        resultado.getString("tipo"),
-                        resultado.getInt("codigo"),
-                        resultado.getString("descripcion"),
-                        resultado.getDouble("tarifa_dia"),
-                        resultado.getBoolean("disponible")
-                );
+            if (conexion == null) {
+                return equipos;
+            }
 
-                equipos.add(equipo);
+            try (PreparedStatement consulta = conexion.prepareStatement(sql);
+                 ResultSet resultado = consulta.executeQuery()) {
+
+                while (resultado.next()) {
+                    EquipoModel equipo = EquipoFactory.crearEquipo(
+                            resultado.getString("tipo"),
+                            resultado.getInt("codigo"),
+                            resultado.getString("descripcion"),
+                            resultado.getDouble("tarifa_dia"),
+                            resultado.getBoolean("disponible")
+                    );
+
+                    equipos.add(equipo);
+                }
             }
 
         } catch (SQLException e) {
@@ -62,13 +73,18 @@ public class EquipoDAO {
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
         String sql = "UPDATE equipos SET disponible = ? WHERE codigo = ?";
 
-        try (Connection conexion = ConexionBD.conectar();
-             PreparedStatement consulta = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionBD.conectar()) {
 
-            consulta.setBoolean(1, disponible);
-            consulta.setInt(2, codigo);
+            if (conexion == null) {
+                return false;
+            }
 
-            return consulta.executeUpdate() > 0;
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setBoolean(1, disponible);
+                consulta.setInt(2, codigo);
+
+                return consulta.executeUpdate() > 0;
+            }
 
         } catch (SQLException e) {
             System.out.println("Error al actualizar equipo: " + e.getMessage());
@@ -79,12 +95,17 @@ public class EquipoDAO {
     public boolean eliminar(int codigo) {
         String sql = "DELETE FROM equipos WHERE codigo = ?";
 
-        try (Connection conexion = ConexionBD.conectar();
-             PreparedStatement consulta = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionBD.conectar()) {
 
-            consulta.setInt(1, codigo);
+            if (conexion == null) {
+                return false;
+            }
 
-            return consulta.executeUpdate() > 0;
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setInt(1, codigo);
+
+                return consulta.executeUpdate() > 0;
+            }
 
         } catch (SQLException e) {
             System.out.println("Error al eliminar equipo: " + e.getMessage());

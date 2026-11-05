@@ -1,3 +1,4 @@
+
 package controllers;
 
 import dao.EquipoDAO;
@@ -9,7 +10,7 @@ public class EquipoController {
     private EquipoDAO equipoDAO = new EquipoDAO();
 
     public boolean registrar(EquipoModel equipo, String tipo) {
-        if (equipo == null) {
+        if (equipo == null || tipo == null || tipo.isEmpty()) {
             return false;
         }
 

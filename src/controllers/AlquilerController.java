@@ -1,3 +1,4 @@
+
 package controllers;
 
 import dao.AlquilerDAO;
@@ -9,7 +10,11 @@ public class AlquilerController {
     private AlquilerDAO alquilerDAO = new AlquilerDAO();
 
     public boolean registrar(AlquilerModel alquiler) {
-        if (alquiler == null) {
+        if (alquiler == null || alquiler.getCliente() == null || alquiler.getEquipo() == null) {
+            return false;
+        }
+
+        if (alquiler.getDias() <= 0 || alquiler.getMontoCobrado() < 0) {
             return false;
         }
 

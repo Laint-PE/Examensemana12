@@ -1,6 +1,8 @@
+
 package models;
 
 public class ClienteModel {
+
     private int dni;
     private String nombre;
     private String telefono;

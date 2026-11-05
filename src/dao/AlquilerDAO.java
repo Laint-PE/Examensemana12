@@ -1,3 +1,4 @@
+
 package dao;
 
 import config.ConexionBD;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 public class AlquilerDAO {
 
     public boolean registrar(AlquilerModel alquiler) {
-        String sql = "INSERT INTO alquileres (id, cliente_dni, equipo_codigo, dias, monto_cobrado, devuelto) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO alquileres (cliente_dni, equipo_codigo, dias, monto_cobrado, devuelto) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.conectar()) {
 
@@ -23,12 +24,11 @@ public class AlquilerDAO {
             }
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-                consulta.setInt(1, alquiler.getId());
-                consulta.setInt(2, alquiler.getCliente().getDni());
-                consulta.setInt(3, alquiler.getEquipo().getCodigo());
-                consulta.setInt(4, alquiler.getDias());
-                consulta.setDouble(5, alquiler.getMontoCobrado());
-                consulta.setBoolean(6, alquiler.isDevuelto());
+                consulta.setInt(1, alquiler.getCliente().getDni());
+                consulta.setInt(2, alquiler.getEquipo().getCodigo());
+                consulta.setInt(3, alquiler.getDias());
+                consulta.setDouble(4, alquiler.getMontoCobrado());
+                consulta.setBoolean(5, alquiler.isDevuelto());
 
                 return consulta.executeUpdate() > 0;
             }
@@ -42,7 +42,8 @@ public class AlquilerDAO {
     public ArrayList<AlquilerModel> listar() {
         ArrayList<AlquilerModel> alquileres = new ArrayList<>();
 
-        String sql = "SELECT a.*, c.nombre, c.telefono, e.descripcion, e.tarifa_dia, e.disponible, e.tipo " +
+        String sql = "SELECT a.*, c.dni, c.nombre, c.telefono, " +
+                "e.codigo, e.descripcion, e.tarifa_dia, e.disponible, e.tipo " +
                 "FROM alquileres a " +
                 "INNER JOIN clientes c ON a.cliente_dni = c.dni " +
                 "INNER JOIN equipos e ON a.equipo_codigo = e.codigo";
@@ -58,14 +59,14 @@ public class AlquilerDAO {
 
                 while (resultado.next()) {
                     ClienteModel cliente = new ClienteModel(
-                            resultado.getInt("cliente_dni"),
+                            resultado.getInt("dni"),
                             resultado.getString("nombre"),
                             resultado.getString("telefono")
                     );
 
                     EquipoModel equipo = EquipoFactory.crearEquipo(
                             resultado.getString("tipo"),
-                            resultado.getInt("equipo_codigo"),
+                            resultado.getInt("codigo"),
                             resultado.getString("descripcion"),
                             resultado.getDouble("tarifa_dia"),
                             resultado.getBoolean("disponible")
