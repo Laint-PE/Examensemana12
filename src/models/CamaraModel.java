@@ -1,3 +1,4 @@
+
 package models;
 
 public class CamaraModel extends EquipoModel {
@@ -10,5 +11,10 @@ public class CamaraModel extends EquipoModel {
     public double calcularMonto(int dias) {
         double subtotal = getTarifaDia() * dias;
         return subtotal * 1.15;
+    }
+
+    @Override
+    public String getTipo() {
+        return "CAMARA";
     }
 }

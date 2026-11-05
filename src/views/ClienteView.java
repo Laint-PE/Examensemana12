@@ -3,6 +3,7 @@ package views;
 
 import controllers.ClienteController;
 import models.ClienteModel;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ClienteView {
@@ -21,9 +22,10 @@ public class ClienteView {
             System.out.println("\n===== GESTION DE CLIENTES =====");
             System.out.println("1. Registrar cliente");
             System.out.println("2. Listar clientes");
-            System.out.println("3. Buscar cliente");
-            System.out.println("4. Eliminar cliente");
-            System.out.println("5. Volver");
+            System.out.println("3. Buscar por documento");
+            System.out.println("4. Buscar por nombre");
+            System.out.println("5. Eliminar cliente");
+            System.out.println("6. Volver");
             System.out.print("Seleccione una opcion: ");
 
             try {
@@ -33,22 +35,20 @@ public class ClienteView {
                     case 1:
                         registrar();
                         break;
-
                     case 2:
                         listar();
                         break;
-
                     case 3:
-                        buscar();
+                        buscarPorDocumento();
                         break;
-
                     case 4:
+                        buscarPorNombre();
+                        break;
+                    case 5:
                         eliminar();
                         break;
-
-                    case 5:
+                    case 6:
                         break;
-
                     default:
                         System.out.println("Opcion no valida.");
                 }
@@ -57,89 +57,115 @@ public class ClienteView {
                 System.out.println("Ingrese un numero valido.");
             }
 
-        } while (opcion != 5);
+        } while (opcion != 6);
     }
 
     private void registrar() {
-        try {
-            System.out.print("DNI: ");
-            int dni = Integer.parseInt(scanner.nextLine());
+        System.out.print("DNI o RUC: ");
+        String documento = scanner.nextLine().trim();
 
-            if (dni < 10000000 || dni > 99999999) {
-                System.out.println("El DNI debe tener 8 digitos.");
-                return;
-            }
+        if (!documento.matches("[0-9]{8}|[0-9]{11}")) {
+            System.out.println("El documento debe tener 8 o 11 digitos.");
+            return;
+        }
 
-            if (clienteController.buscarPorDni(dni) != null) {
-                System.out.println("El cliente ya se encuentra registrado.");
-                return;
-            }
+        if (clienteController.buscarPorDocumento(documento) != null) {
+            System.out.println("El cliente ya se encuentra registrado.");
+            return;
+        }
 
-            System.out.print("Nombre: ");
-            String nombre = scanner.nextLine();
+        System.out.print("Nombre: ");
+        String nombre = scanner.nextLine().trim();
 
-            System.out.print("Telefono: ");
-            String telefono = scanner.nextLine();
+        System.out.print("Telefono: ");
+        String telefono = scanner.nextLine().trim();
 
-            if (nombre.trim().isEmpty() || telefono.trim().isEmpty()) {
-                System.out.println("Complete todos los datos.");
-                return;
-            }
+        if (nombre.isEmpty() || telefono.isEmpty()) {
+            System.out.println("Complete todos los datos.");
+            return;
+        }
 
-            ClienteModel cliente = new ClienteModel(dni, nombre, telefono);
+        ClienteModel cliente = new ClienteModel(documento, nombre, telefono);
 
-            if (clienteController.registrar(cliente)) {
-                System.out.println("Cliente registrado correctamente.");
-            } else {
-                System.out.println("No se pudo registrar el cliente.");
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("El DNI debe ser numerico.");
+        if (clienteController.registrar(cliente)) {
+            System.out.println("Cliente registrado correctamente.");
+        } else {
+            System.out.println("No se pudo registrar el cliente.");
         }
     }
 
     private void listar() {
-        for (ClienteModel cliente : clienteController.listar()) {
-            System.out.println("\nDNI: " + cliente.getDni());
-            System.out.println("Nombre: " + cliente.getNombre());
-            System.out.println("Telefono: " + cliente.getTelefono());
+        ArrayList<ClienteModel> clientes = clienteController.listar();
+
+        if (clientes.isEmpty()) {
+            System.out.println("No hay clientes registrados.");
+            return;
+        }
+
+        for (ClienteModel cliente : clientes) {
+            mostrarInformacion(cliente);
         }
     }
 
-    private void buscar() {
-        try {
-            System.out.print("Ingrese el DNI: ");
-            int dni = Integer.parseInt(scanner.nextLine());
+    private void buscarPorDocumento() {
+        System.out.print("Ingrese el DNI o RUC: ");
+        String documento = scanner.nextLine().trim();
 
-            ClienteModel cliente = clienteController.buscarPorDni(dni);
+        if (documento.isEmpty()) {
+            System.out.println("Ingrese un documento.");
+            return;
+        }
 
-            if (cliente != null) {
-                System.out.println("\nDNI: " + cliente.getDni());
-                System.out.println("Nombre: " + cliente.getNombre());
-                System.out.println("Telefono: " + cliente.getTelefono());
-            } else {
-                System.out.println("Cliente no encontrado.");
-            }
+        ClienteModel cliente = clienteController.buscarPorDocumento(documento);
 
-        } catch (NumberFormatException e) {
-            System.out.println("Ingrese un DNI valido.");
+        if (cliente != null) {
+            mostrarInformacion(cliente);
+        } else {
+            System.out.println("Cliente no encontrado.");
+        }
+    }
+
+    private void buscarPorNombre() {
+        System.out.print("Ingrese el nombre o parte del nombre: ");
+        String nombre = scanner.nextLine().trim();
+
+        if (nombre.isEmpty()) {
+            System.out.println("Ingrese un nombre para realizar la busqueda.");
+            return;
+        }
+
+        ArrayList<ClienteModel> clientes = clienteController.buscarPorNombre(nombre);
+
+        if (clientes.isEmpty()) {
+            System.out.println("No se encontraron clientes.");
+            return;
+        }
+
+        for (ClienteModel cliente : clientes) {
+            mostrarInformacion(cliente);
         }
     }
 
     private void eliminar() {
-        try {
-            System.out.print("Ingrese el DNI del cliente: ");
-            int dni = Integer.parseInt(scanner.nextLine());
+        System.out.print("Ingrese el DNI o RUC del cliente: ");
+        String documento = scanner.nextLine().trim();
 
-            if (clienteController.eliminar(dni)) {
-                System.out.println("Cliente eliminado correctamente.");
-            } else {
-                System.out.println("No se pudo eliminar. Verifique el DNI o si tiene alquileres registrados.");
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("Ingrese un DNI valido.");
+        if (documento.isEmpty()) {
+            System.out.println("Ingrese un documento.");
+            return;
         }
+
+        if (clienteController.eliminar(documento)) {
+            System.out.println("Cliente eliminado correctamente.");
+        } else {
+            System.out.println("No se pudo eliminar. Verifique el documento o sus alquileres registrados.");
+        }
+    }
+
+    private void mostrarInformacion(ClienteModel cliente) {
+        System.out.println("\n===== CLIENTE =====");
+        System.out.println("Documento: " + cliente.getDocumento());
+        System.out.println("Nombre: " + cliente.getNombre());
+        System.out.println("Telefono: " + cliente.getTelefono());
     }
 }

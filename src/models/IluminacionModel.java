@@ -1,3 +1,4 @@
+
 package models;
 
 public class IluminacionModel extends EquipoModel {
@@ -15,5 +16,10 @@ public class IluminacionModel extends EquipoModel {
         }
 
         return subtotal;
+    }
+
+    @Override
+    public String getTipo() {
+        return "ILUMINACION";
     }
 }

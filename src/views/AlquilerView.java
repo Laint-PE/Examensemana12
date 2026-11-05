@@ -7,6 +7,8 @@ import controllers.EquipoController;
 import models.AlquilerModel;
 import models.ClienteModel;
 import models.EquipoModel;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class AlquilerView {
@@ -29,7 +31,9 @@ public class AlquilerView {
             System.out.println("2. Listar alquileres");
             System.out.println("3. Registrar devolucion");
             System.out.println("4. Buscar alquiler");
-            System.out.println("5. Volver");
+            System.out.println("5. Listar alquileres pendientes");
+            System.out.println("6. Reporte mensual");
+            System.out.println("7. Volver");
             System.out.print("Seleccione una opcion: ");
 
             try {
@@ -39,22 +43,23 @@ public class AlquilerView {
                     case 1:
                         registrar();
                         break;
-
                     case 2:
                         listar();
                         break;
-
                     case 3:
                         devolver();
                         break;
-
                     case 4:
                         buscar();
                         break;
-
                     case 5:
+                        listarPendientes();
                         break;
-
+                    case 6:
+                        reporteMensual();
+                        break;
+                    case 7:
+                        break;
                     default:
                         System.out.println("Opcion no valida.");
                 }
@@ -63,15 +68,15 @@ public class AlquilerView {
                 System.out.println("Ingrese un numero valido.");
             }
 
-        } while (opcion != 5);
+        } while (opcion != 7);
     }
 
     private void registrar() {
         try {
-            System.out.print("DNI del cliente: ");
-            int dni = Integer.parseInt(scanner.nextLine());
+            System.out.print("DNI o RUC del cliente: ");
+            String documento = scanner.nextLine().trim();
 
-            ClienteModel cliente = clienteController.buscarPorDni(dni);
+            ClienteModel cliente = clienteController.buscarPorDocumento(documento);
 
             if (cliente == null) {
                 System.out.println("El cliente no existe.");
@@ -108,7 +113,7 @@ public class AlquilerView {
                 return;
             }
 
-            double monto = equipo.calcularMonto(dias);
+            double monto = alquilerController.calcularMonto(equipo, dias);
 
             System.out.println("Monto del alquiler: S/ " + monto);
             System.out.print("¿Desea confirmar el alquiler? (1. Si / 2. No): ");
@@ -120,14 +125,19 @@ public class AlquilerView {
             }
 
             AlquilerModel alquiler = new AlquilerModel(
-                    0, cliente, equipo, dias, monto, false
+                    0,
+                    cliente,
+                    equipo,
+                    LocalDate.now(),
+                    dias,
+                    monto,
+                    false
             );
 
             if (alquilerController.registrar(alquiler)) {
-                equipoController.actualizarDisponibilidad(codigo, false);
                 System.out.println("Alquiler registrado correctamente.");
             } else {
-                System.out.println("No se pudo registrar el alquiler.");
+                System.out.println("No se pudo registrar el alquiler. Verifique la disponibilidad del equipo.");
             }
 
         } catch (NumberFormatException e) {
@@ -136,7 +146,14 @@ public class AlquilerView {
     }
 
     private void listar() {
-        for (AlquilerModel alquiler : alquilerController.listar()) {
+        ArrayList<AlquilerModel> alquileres = alquilerController.listar();
+
+        if (alquileres.isEmpty()) {
+            System.out.println("No hay alquileres registrados.");
+            return;
+        }
+
+        for (AlquilerModel alquiler : alquileres) {
             mostrarInformacion(alquiler);
         }
     }
@@ -177,10 +194,6 @@ public class AlquilerView {
             }
 
             if (alquilerController.actualizarDevolucion(id, true)) {
-                equipoController.actualizarDisponibilidad(
-                        alquiler.getEquipo().getCodigo(), true
-                );
-
                 System.out.println("Devolucion registrada correctamente.");
             } else {
                 System.out.println("No se pudo registrar la devolucion.");
@@ -191,13 +204,53 @@ public class AlquilerView {
         }
     }
 
+    private void listarPendientes() {
+        ArrayList<AlquilerModel> alquileres = alquilerController.listarPendientes();
+
+        if (alquileres.isEmpty()) {
+            System.out.println("No hay alquileres pendientes.");
+            return;
+        }
+
+        for (AlquilerModel alquiler : alquileres) {
+            mostrarInformacion(alquiler);
+        }
+    }
+
+    private void reporteMensual() {
+        try {
+            System.out.print("Ingrese el mes (1-12): ");
+            int mes = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("Ingrese el anio: ");
+            int anio = Integer.parseInt(scanner.nextLine());
+
+            ArrayList<String> reporte = alquilerController.reporteMensual(mes, anio);
+
+            if (reporte.isEmpty()) {
+                System.out.println("No hay ingresos registrados para ese periodo.");
+                return;
+            }
+
+            System.out.println("\n===== REPORTE MENSUAL =====");
+
+            for (String linea : reporte) {
+                System.out.println(linea);
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("Ingrese un mes y anio validos.");
+        }
+    }
+
     private void mostrarInformacion(AlquilerModel alquiler) {
         System.out.println("\n===== ALQUILER =====");
         System.out.println("ID: " + alquiler.getId());
         System.out.println("Cliente: " + alquiler.getCliente().getNombre());
-        System.out.println("DNI: " + alquiler.getCliente().getDni());
+        System.out.println("Documento: " + alquiler.getCliente().getDocumento());
         System.out.println("Equipo: " + alquiler.getEquipo().getDescripcion());
         System.out.println("Codigo: " + alquiler.getEquipo().getCodigo());
+        System.out.println("Fecha de inicio: " + alquiler.getFechaInicio());
         System.out.println("Dias: " + alquiler.getDias());
         System.out.println("Monto: S/ " + alquiler.getMontoCobrado());
         System.out.println("Devuelto: " + (alquiler.isDevuelto() ? "Si" : "No"));

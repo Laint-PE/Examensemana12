@@ -3,18 +3,18 @@ package models;
 
 public class ClienteModel {
 
-    private int dni;
+    private String documento;
     private String nombre;
     private String telefono;
 
-    public ClienteModel(int dni, String nombre, String telefono) {
-        this.dni = dni;
+    public ClienteModel(String documento, String nombre, String telefono) {
+        this.documento = documento;
         this.nombre = nombre;
         this.telefono = telefono;
     }
 
-    public int getDni() {
-        return dni;
+    public String getDocumento() {
+        return documento;
     }
 
     public String getNombre() {

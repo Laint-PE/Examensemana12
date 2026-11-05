@@ -9,12 +9,15 @@ public class EquipoController {
 
     private EquipoDAO equipoDAO = new EquipoDAO();
 
-    public boolean registrar(EquipoModel equipo, String tipo) {
-        if (equipo == null || tipo == null || tipo.isEmpty()) {
+    public boolean registrar(EquipoModel equipo) {
+        if (equipo == null || equipo.getCodigo() <= 0 ||
+                equipo.getDescripcion() == null ||
+                equipo.getDescripcion().trim().isEmpty() ||
+                equipo.getTarifaDia() <= 0) {
             return false;
         }
 
-        return equipoDAO.registrar(equipo, tipo);
+        return equipoDAO.registrar(equipo);
     }
 
     public ArrayList<EquipoModel> listar() {
@@ -22,10 +25,18 @@ public class EquipoController {
     }
 
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
+        if (codigo <= 0) {
+            return false;
+        }
+
         return equipoDAO.actualizarDisponibilidad(codigo, disponible);
     }
 
     public boolean eliminar(int codigo) {
+        if (codigo <= 0) {
+            return false;
+        }
+
         return equipoDAO.eliminar(codigo);
     }
 }

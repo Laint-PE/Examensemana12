@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class EquipoDAO {
 
-    public boolean registrar(EquipoModel equipo, String tipo) {
+    public boolean registrar(EquipoModel equipo) {
         String sql = "INSERT INTO equipos (codigo, descripcion, tarifa_dia, disponible, tipo) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.conectar()) {
@@ -26,7 +26,7 @@ public class EquipoDAO {
                 consulta.setString(2, equipo.getDescripcion());
                 consulta.setDouble(3, equipo.getTarifaDia());
                 consulta.setBoolean(4, equipo.isDisponible());
-                consulta.setString(5, tipo.toUpperCase());
+                consulta.setString(5, equipo.getTipo());
 
                 return consulta.executeUpdate() > 0;
             }
@@ -39,7 +39,7 @@ public class EquipoDAO {
 
     public ArrayList<EquipoModel> listar() {
         ArrayList<EquipoModel> equipos = new ArrayList<>();
-        String sql = "SELECT * FROM equipos";
+        String sql = "SELECT * FROM equipos ORDER BY codigo";
 
         try (Connection conexion = ConexionBD.conectar()) {
 

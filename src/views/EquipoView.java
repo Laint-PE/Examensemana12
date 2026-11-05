@@ -34,22 +34,17 @@ public class EquipoView {
                     case 1:
                         registrar();
                         break;
-
                     case 2:
                         listar();
                         break;
-
                     case 3:
                         actualizarDisponibilidad();
                         break;
-
                     case 4:
                         eliminar();
                         break;
-
                     case 5:
                         break;
-
                     default:
                         System.out.println("Opcion no valida.");
                 }
@@ -66,24 +61,25 @@ public class EquipoView {
             System.out.println("\n1. Camara");
             System.out.println("2. Audio");
             System.out.println("3. Iluminacion");
+            System.out.println("4. Dron");
             System.out.print("Seleccione el tipo: ");
-            int opcion = Integer.parseInt(scanner.nextLine());
 
+            int opcion = Integer.parseInt(scanner.nextLine());
             String tipo;
 
             switch (opcion) {
                 case 1:
                     tipo = "CAMARA";
                     break;
-
                 case 2:
                     tipo = "AUDIO";
                     break;
-
                 case 3:
                     tipo = "ILUMINACION";
                     break;
-
+                case 4:
+                    tipo = "DRON";
+                    break;
                 default:
                     System.out.println("Tipo no valido.");
                     return;
@@ -107,7 +103,7 @@ public class EquipoView {
                     tipo, codigo, descripcion, tarifa, true
             );
 
-            if (equipoController.registrar(equipo, tipo)) {
+            if (equipoController.registrar(equipo)) {
                 System.out.println("Equipo registrado correctamente.");
             } else {
                 System.out.println("No se pudo registrar el equipo.");
@@ -115,6 +111,8 @@ public class EquipoView {
 
         } catch (NumberFormatException e) {
             System.out.println("Ingrese valores numericos validos.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -122,9 +120,9 @@ public class EquipoView {
         for (EquipoModel equipo : equipoController.listar()) {
             System.out.println("\nCodigo: " + equipo.getCodigo());
             System.out.println("Descripcion: " + equipo.getDescripcion());
+            System.out.println("Tipo: " + equipo.getTipo());
             System.out.println("Tarifa diaria: S/ " + equipo.getTarifaDia());
             System.out.println("Disponible: " + (equipo.isDisponible() ? "Si" : "No"));
-            System.out.println("Tipo: " + equipo.getClass().getSimpleName());
         }
     }
 

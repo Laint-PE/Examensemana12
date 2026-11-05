@@ -16,6 +16,8 @@ public abstract class EquipoModel {
 
     public abstract double calcularMonto(int dias);
 
+    public abstract String getTipo();
+
     public int getCodigo() {
         return codigo;
     }
