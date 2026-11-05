@@ -4,13 +4,12 @@ package views;
 import controllers.EquipoController;
 import models.EquipoModel;
 import models.EquipoFactory;
-import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class EquipoView {
 
-    private Scanner scanner;
-    private EquipoController equipoController = new EquipoController();
+    private final Scanner scanner;
+    private final EquipoController equipoController = new EquipoController();
 
     public EquipoView(Scanner scanner) {
         this.scanner = scanner;
@@ -62,7 +61,6 @@ public class EquipoView {
             System.out.println("\n1. Camara");
             System.out.println("2. Audio");
             System.out.println("3. Iluminacion");
-            System.out.println("4. Dron");
             System.out.print("Seleccione el tipo: ");
 
             int opcion = Integer.parseInt(scanner.nextLine());
@@ -78,9 +76,6 @@ public class EquipoView {
                 case 3:
                     tipo = "ILUMINACION";
                     break;
-                case 4:
-                    tipo = "DRON";
-                    break;
                 default:
                     System.out.println("Tipo no valido.");
                     return;
@@ -90,12 +85,12 @@ public class EquipoView {
             int codigo = Integer.parseInt(scanner.nextLine());
 
             System.out.print("Descripcion: ");
-            String descripcion = scanner.nextLine();
+            String descripcion = scanner.nextLine().trim();
 
             System.out.print("Tarifa por dia: ");
-            BigDecimal tarifa = new BigDecimal(scanner.nextLine());
+            double tarifa = Double.parseDouble(scanner.nextLine());
 
-            if (descripcion.trim().isEmpty() || tarifa.compareTo(BigDecimal.ZERO) <= 0) {
+            if (descripcion.isEmpty() || !Double.isFinite(tarifa) || tarifa <= 0) {
                 System.out.println("Ingrese datos validos.");
                 return;
             }
@@ -118,11 +113,16 @@ public class EquipoView {
     }
 
     private void listar() {
+        if (equipoController.listar().isEmpty()) {
+            System.out.println("No hay equipos registrados.");
+            return;
+        }
+
         for (EquipoModel equipo : equipoController.listar()) {
             System.out.println("\nCodigo: " + equipo.getCodigo());
             System.out.println("Descripcion: " + equipo.getDescripcion());
             System.out.println("Tipo: " + equipo.getTipo());
-            System.out.println("Tarifa diaria: S/ " + equipo.getTarifaDia());
+            System.out.printf("Tarifa diaria: S/ %.2f%n", equipo.getTarifaDia());
             System.out.println("Disponible: " + (equipo.isDisponible() ? "Si" : "No"));
         }
     }
@@ -159,7 +159,7 @@ public class EquipoView {
             if (equipoController.eliminar(codigo)) {
                 System.out.println("Equipo eliminado correctamente.");
             } else {
-                System.out.println("No se pudo eliminar. Verifique el codigo o si tiene alquileres registrados.");
+                System.out.println("No se pudo eliminar. Verifique el codigo o sus alquileres registrados.");
             }
 
         } catch (NumberFormatException e) {

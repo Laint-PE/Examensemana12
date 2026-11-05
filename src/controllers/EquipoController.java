@@ -3,18 +3,19 @@ package controllers;
 
 import dao.EquipoDAO;
 import models.EquipoModel;
+import repositories.EquipoRepository;
 import java.util.ArrayList;
 
 public class EquipoController {
 
-    private EquipoRepository equipoRepository = new EquipoDAO();
+    private final EquipoRepository equipoRepository = new EquipoDAO();
 
     public boolean registrar(EquipoModel equipo) {
         if (equipo == null || equipo.getCodigo() <= 0 ||
                 equipo.getDescripcion() == null ||
                 equipo.getDescripcion().trim().isEmpty() ||
-                equipo.getTarifaDia() == null ||
-                equipo.getTarifaDia().compareTo(BigDecimal.ZERO) <= 0) {
+                !Double.isFinite(equipo.getTarifaDia()) ||
+                equipo.getTarifaDia() <= 0) {
             return false;
         }
 
@@ -26,33 +27,19 @@ public class EquipoController {
     }
 
     public EquipoModel buscarPorCodigo(int codigo) {
-        if (codigo <= 0) {
-            return null;
-        }
+        if (codigo <= 0) return null;
 
         return equipoRepository.buscarPorCodigo(codigo);
     }
 
-    public EquipoModel buscarPorCodigo(int codigo) {
-        if (codigo <= 0) {
-            return null;
-        }
-
-        return equipoDAO.buscarPorCodigo(codigo);
-    }
-
     public boolean actualizarDisponibilidad(int codigo, boolean disponible) {
-        if (codigo <= 0) {
-            return false;
-        }
+        if (codigo <= 0) return false;
 
         return equipoRepository.actualizarDisponibilidad(codigo, disponible);
     }
 
     public boolean eliminar(int codigo) {
-        if (codigo <= 0) {
-            return false;
-        }
+        if (codigo <= 0) return false;
 
         return equipoRepository.eliminar(codigo);
     }

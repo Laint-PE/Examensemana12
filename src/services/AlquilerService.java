@@ -3,38 +3,74 @@ package services;
 
 import config.ConexionBD;
 import dao.AlquilerDAO;
-import repositories.AlquilerRepository;
+import dao.EquipoDAO;
 import models.AlquilerModel;
+import models.EquipoModel;
+import repositories.AlquilerRepository;
+import repositories.EquipoRepository;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 public class AlquilerService {
 
+    private final AlquilerRepository alquilerRepository;
+    private final EquipoRepository equipoRepository;
+
+    public AlquilerService() {
+        this.alquilerRepository = new AlquilerDAO();
+        this.equipoRepository = new EquipoDAO();
+    }
+
+    public AlquilerService(AlquilerRepository alquilerRepository,
+                           EquipoRepository equipoRepository) {
+        this.alquilerRepository = alquilerRepository;
+        this.equipoRepository = equipoRepository;
+    }
 
     public boolean registrar(AlquilerModel alquiler) {
-        String sql = "UPDATE equipos SET disponible = FALSE WHERE codigo = ? AND disponible = TRUE";
+        if (alquiler == null || alquiler.getCliente() == null ||
+                alquiler.getEquipo() == null || alquiler.getDias() <= 0) {
+            return false;
+        }
+
+        EquipoModel equipo = alquiler.getEquipo();
+        double monto = equipo.calcularMonto(alquiler.getDias());
+
+        if (!Double.isFinite(monto) || monto < 0) {
+            return false;
+        }
+
+        AlquilerModel nuevoAlquiler = new AlquilerModel(
+                0,
+                alquiler.getCliente(),
+                equipo,
+                LocalDate.now(),
+                alquiler.getDias(),
+                monto,
+                false
+        );
 
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return false;
 
-            if (conexion == null) {
-                return false;
-            }
-
             conexion.setAutoCommit(false);
 
             try {
-                try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
-                    consulta.setInt(1, alquiler.getEquipo().getCodigo());
+                boolean ocupado = equipoRepository.ocuparSiDisponible(
+                        conexion, equipo.getCodigo()
+                );
 
-                    if (consulta.executeUpdate() != 1) {
-                        conexion.rollback();
-                        return false;
-                    }
+                if (!ocupado) {
+                    conexion.rollback();
+                    return false;
                 }
 
+                boolean registrado = alquilerRepository.registrar(
+                        conexion, nuevoAlquiler
+                );
+
+                if (!registrado) {
                     conexion.rollback();
                     return false;
                 }
@@ -42,7 +78,7 @@ public class AlquilerService {
                 conexion.commit();
                 return true;
 
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
                 conexion.rollback();
                 throw e;
             }
@@ -54,51 +90,45 @@ public class AlquilerService {
     }
 
     public boolean devolver(int id) {
-        String buscar = "SELECT equipo_codigo, devuelto FROM alquileres WHERE id = ? FOR UPDATE";
-        String actualizarEquipo = "UPDATE equipos SET disponible = TRUE WHERE codigo = ?";
+        if (id <= 0) return false;
 
         try (Connection conexion = ConexionBD.conectar()) {
             if (conexion == null) return false;
 
-            if (conexion == null) {
-                return false;
-            }
-
             conexion.setAutoCommit(false);
 
             try {
-                int codigoEquipo;
+                int codigoEquipo = alquilerRepository.obtenerCodigoEquipoPendiente(
+                        conexion, id
+                );
 
-                try (PreparedStatement consulta = conexion.prepareStatement(buscar)) {
-                    consulta.setInt(1, id);
-
-                    try (ResultSet resultado = consulta.executeQuery()) {
-                        if (!resultado.next() || resultado.getBoolean("devuelto")) {
-                            conexion.rollback();
-                            return false;
-                        }
-
-                        codigoEquipo = resultado.getInt("equipo_codigo");
-                    }
-                }
-
+                if (codigoEquipo == -1) {
                     conexion.rollback();
                     return false;
                 }
 
-                try (PreparedStatement consulta = conexion.prepareStatement(actualizarEquipo)) {
-                    consulta.setInt(1, codigoEquipo);
+                boolean devuelto = alquilerRepository.marcarDevuelto(
+                        conexion, id
+                );
 
-                    if (consulta.executeUpdate() != 1) {
-                        conexion.rollback();
-                        return false;
-                    }
+                if (!devuelto) {
+                    conexion.rollback();
+                    return false;
+                }
+
+                boolean disponible = equipoRepository.actualizarDisponibilidad(
+                        conexion, codigoEquipo, true
+                );
+
+                if (!disponible) {
+                    conexion.rollback();
+                    return false;
                 }
 
                 conexion.commit();
                 return true;
 
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
                 conexion.rollback();
                 throw e;
             }

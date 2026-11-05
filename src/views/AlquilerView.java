@@ -7,17 +7,16 @@ import controllers.EquipoController;
 import models.AlquilerModel;
 import models.ClienteModel;
 import models.EquipoModel;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class AlquilerView {
 
-    private Scanner scanner;
-    private AlquilerController alquilerController = new AlquilerController();
-    private ClienteController clienteController = new ClienteController();
-    private EquipoController equipoController = new EquipoController();
+    private final Scanner scanner;
+    private final AlquilerController alquilerController = new AlquilerController();
+    private final ClienteController clienteController = new ClienteController();
+    private final EquipoController equipoController = new EquipoController();
 
     public AlquilerView(Scanner scanner) {
         this.scanner = scanner;
@@ -107,9 +106,9 @@ public class AlquilerView {
                 return;
             }
 
-            BigDecimal monto = alquilerController.calcularMonto(equipo, dias);
+            double monto = alquilerController.calcularMonto(equipo, dias);
 
-            System.out.println("Monto del alquiler: S/ " + monto);
+            System.out.printf("Monto del alquiler: S/ %.2f%n", monto);
             System.out.print("¿Desea confirmar el alquiler? (1. Si / 2. No): ");
             int confirmar = Integer.parseInt(scanner.nextLine());
 
@@ -175,22 +174,10 @@ public class AlquilerView {
             System.out.print("Ingrese el ID del alquiler: ");
             int id = Integer.parseInt(scanner.nextLine());
 
-            AlquilerModel alquiler = alquilerController.buscarPorId(id);
-
-            if (alquiler == null) {
-                System.out.println("Alquiler no encontrado.");
-                return;
-            }
-
-            if (alquiler.isDevuelto()) {
-                System.out.println("Este alquiler ya fue devuelto.");
-                return;
-            }
-
-            if (alquilerController.actualizarDevolucion(id, true)) {
+            if (alquilerController.devolver(id)) {
                 System.out.println("Devolucion registrada correctamente.");
             } else {
-                System.out.println("No se pudo registrar la devolucion.");
+                System.out.println("No se pudo registrar la devolucion. Verifique el ID o si ya fue devuelto.");
             }
 
         } catch (NumberFormatException e) {
@@ -219,10 +206,15 @@ public class AlquilerView {
             System.out.print("Ingrese el anio: ");
             int anio = Integer.parseInt(scanner.nextLine());
 
+            if (mes < 1 || mes > 12 || anio < 1) {
+                System.out.println("Ingrese un periodo valido.");
+                return;
+            }
+
             ArrayList<String> reporte = alquilerController.reporteMensual(mes, anio);
 
             if (reporte.isEmpty()) {
-                System.out.println("No hay ingresos registrados para ese periodo.");
+                System.out.println("No se pudo obtener el reporte.");
                 return;
             }
 
@@ -246,7 +238,7 @@ public class AlquilerView {
         System.out.println("Codigo: " + alquiler.getEquipo().getCodigo());
         System.out.println("Fecha de inicio: " + alquiler.getFechaInicio());
         System.out.println("Dias: " + alquiler.getDias());
-        System.out.println("Monto: S/ " + alquiler.getMontoCobrado());
+        System.out.printf("Monto: S/ %.2f%n", alquiler.getMontoCobrado());
         System.out.println("Devuelto: " + (alquiler.isDevuelto() ? "Si" : "No"));
     }
 }

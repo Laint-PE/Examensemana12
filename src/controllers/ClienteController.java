@@ -8,20 +8,20 @@ import java.util.ArrayList;
 
 public class ClienteController {
 
-    private ClienteRepository clienteRepository = new ClienteDAOCache();
+    private final ClienteRepository clienteRepository = new ClienteDAOCache();
 
     public boolean registrar(ClienteModel cliente) {
-        if (cliente == null || cliente.getDocumento() == null) {
+        if (cliente == null || cliente.getDocumento() == null ||
+                cliente.getNombre() == null || cliente.getTelefono() == null) {
             return false;
         }
 
-        String documento = cliente.getDocumento();
+        String documento = cliente.getDocumento().trim();
+        String nombre = cliente.getNombre().trim();
+        String telefono = cliente.getTelefono().trim();
 
-        if (!documento.matches("[0-9]{8}|[0-9]{11}")) {
-            return false;
-        }
-
-        if (cliente.getNombre() == null || cliente.getNombre().trim().isEmpty()) {
+        if (!documento.matches("[0-9]{8}|[0-9]{11}") ||
+                nombre.isEmpty() || telefono.isEmpty()) {
             return false;
         }
 
@@ -37,7 +37,7 @@ public class ClienteController {
             return null;
         }
 
-        return clienteRepository.buscarPorDocumento(documento);
+        return clienteRepository.buscarPorDocumento(documento.trim());
     }
 
     public ArrayList<ClienteModel> buscarPorNombre(String nombre) {
@@ -45,7 +45,7 @@ public class ClienteController {
             return new ArrayList<>();
         }
 
-        return clienteRepository.buscarPorNombre(nombre);
+        return clienteRepository.buscarPorNombre(nombre.trim());
     }
 
     public boolean eliminar(String documento) {
@@ -53,6 +53,6 @@ public class ClienteController {
             return false;
         }
 
-        return clienteRepository.eliminar(documento);
+        return clienteRepository.eliminar(documento.trim());
     }
 }

@@ -3,16 +3,24 @@ package controllers;
 
 import dao.AlquilerDAO;
 import models.AlquilerModel;
+import models.EquipoModel;
+import repositories.AlquilerRepository;
+import services.AlquilerService;
 import java.util.ArrayList;
 
 public class AlquilerController {
 
-    private AlquilerRepository alquilerRepository = new AlquilerDAO();
-    private AlquilerService alquilerService = new AlquilerService();
+    private final AlquilerRepository alquilerRepository;
+    private final AlquilerService alquilerService;
 
-    public BigDecimal calcularMonto(EquipoModel equipo, int dias) {
+    public AlquilerController() {
+        this.alquilerRepository = new AlquilerDAO();
+        this.alquilerService = new AlquilerService();
+    }
+
+    public double calcularMonto(EquipoModel equipo, int dias) {
         if (equipo == null || dias <= 0) {
-            return BigDecimal.ZERO;
+            return 0;
         }
 
         return equipo.calcularMonto(dias);
@@ -20,13 +28,20 @@ public class AlquilerController {
 
     public boolean registrar(AlquilerModel alquiler) {
         if (alquiler == null || alquiler.getCliente() == null ||
-                alquiler.getEquipo() == null || alquiler.getFechaInicio() == null ||
-                alquiler.getDias() <= 0 || alquiler.getMontoCobrado() == null ||
-                alquiler.getMontoCobrado().compareTo(BigDecimal.ZERO) < 0) {
+                alquiler.getEquipo() == null || alquiler.getDias() <= 0) {
             return false;
         }
 
         return alquilerService.registrar(alquiler);
+    }
+
+    public boolean devolver(int id) {
+        return alquilerService.devolver(id);
+    }
+
+    public boolean actualizarDevolucion(int id, boolean devuelto) {
+        if (!devuelto) return false;
+        return devolver(id);
     }
 
     public ArrayList<AlquilerModel> listar() {
@@ -34,10 +49,19 @@ public class AlquilerController {
     }
 
     public AlquilerModel buscarPorId(int id) {
-        return alquilerDAO.buscarPorId(id);
+        if (id <= 0) return null;
+        return alquilerRepository.buscarPorId(id);
     }
 
-    public boolean actualizarDevolucion(int id, boolean devuelto) {
-        return alquilerDAO.actualizarDevolucion(id, devuelto);
+    public ArrayList<AlquilerModel> listarPendientes() {
+        return alquilerRepository.listarPendientes();
+    }
+
+    public ArrayList<String> reporteMensual(int mes, int anio) {
+        if (mes < 1 || mes > 12 || anio < 1) {
+            return new ArrayList<>();
+        }
+
+        return alquilerRepository.reporteMensual(mes, anio);
     }
 }
