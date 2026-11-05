@@ -1,4 +1,3 @@
-
 package views;
 
 import controllers.AlquilerController;
@@ -7,6 +6,7 @@ import controllers.EquipoController;
 import models.AlquilerModel;
 import models.ClienteModel;
 import models.EquipoModel;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -112,9 +112,9 @@ public class AlquilerView {
                 return;
             }
 
-            double monto = alquilerController.calcularMonto(equipo, dias);
+            BigDecimal monto = alquilerController.calcularMonto(equipo, dias);
 
-            System.out.printf("Monto del alquiler: S/ %.2f%n", monto);
+            System.out.println("Monto estimado del alquiler: S/ " + monto.toPlainString());
             System.out.print("¿Desea confirmar el alquiler? (1. Si / 2. No): ");
             int confirmar = Integer.parseInt(scanner.nextLine());
 
@@ -135,6 +135,8 @@ public class AlquilerView {
 
         } catch (NumberFormatException e) {
             System.out.println("Ingrese valores numericos validos.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -238,7 +240,7 @@ public class AlquilerView {
         System.out.println("Codigo: " + alquiler.getEquipo().getCodigo());
         System.out.println("Fecha de inicio: " + alquiler.getFechaInicio());
         System.out.println("Dias: " + alquiler.getDias());
-        System.out.printf("Monto: S/ %.2f%n", alquiler.getMontoCobrado());
+        System.out.println("Monto: S/ " + alquiler.getMontoCobrado().toPlainString());
         System.out.println("Devuelto: " + (alquiler.isDevuelto() ? "Si" : "No"));
     }
 }

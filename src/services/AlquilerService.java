@@ -4,10 +4,10 @@ import config.ConexionBD;
 import dao.AlquilerDAO;
 import dao.EquipoDAO;
 import models.AlquilerModel;
-import models.ClienteModel;
 import models.EquipoModel;
 import repositories.AlquilerRepository;
 import repositories.EquipoRepository;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -53,9 +53,9 @@ public class AlquilerService {
                     return false;
                 }
 
-                double monto = equipo.calcularMonto(alquiler.getDias());
+                BigDecimal monto = equipo.calcularMonto(alquiler.getDias());
 
-                if (!Double.isFinite(monto) || monto < 0) {
+                if (monto == null || monto.compareTo(BigDecimal.ZERO) < 0) {
                     revertir(conexion);
                     return false;
                 }

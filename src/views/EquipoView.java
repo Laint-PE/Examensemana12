@@ -3,6 +3,7 @@ package views;
 import controllers.EquipoController;
 import models.EquipoModel;
 import models.EquipoFactory;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -80,9 +81,9 @@ public class EquipoView {
             String descripcion = scanner.nextLine().trim();
 
             System.out.print("Tarifa por dia: ");
-            double tarifa = Double.parseDouble(scanner.nextLine());
+            BigDecimal tarifa = new BigDecimal(scanner.nextLine().trim());
 
-            if (descripcion.isEmpty() || !Double.isFinite(tarifa) || tarifa <= 0) {
+            if (descripcion.isEmpty() || tarifa.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Ingrese datos validos.");
                 return;
             }
@@ -116,7 +117,7 @@ public class EquipoView {
             System.out.println("\nCodigo: " + equipo.getCodigo());
             System.out.println("Descripcion: " + equipo.getDescripcion());
             System.out.println("Tipo: " + equipo.getTipo());
-            System.out.printf("Tarifa diaria: S/ %.2f%n", equipo.getTarifaDia());
+            System.out.println("Tarifa diaria: S/ " + equipo.getTarifaDia().toPlainString());
             System.out.println("Disponible: " + (equipo.isDisponible() ? "Si" : "No"));
         }
     }

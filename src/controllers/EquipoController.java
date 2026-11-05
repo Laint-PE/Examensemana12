@@ -3,6 +3,7 @@ package controllers;
 import models.EquipoModel;
 import models.EquipoFactory;
 import repositories.EquipoRepository;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -21,8 +22,8 @@ public class EquipoController {
                         equipo.getTipo().trim().toUpperCase(Locale.ROOT)) ||
                 equipo.getDescripcion() == null ||
                 equipo.getDescripcion().trim().isEmpty() ||
-                !Double.isFinite(equipo.getTarifaDia()) ||
-                equipo.getTarifaDia() <= 0) {
+                equipo.getTarifaDia() == null ||
+                equipo.getTarifaDia().compareTo(BigDecimal.ZERO) <= 0) {
             return false;
         }
 

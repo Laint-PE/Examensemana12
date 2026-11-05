@@ -4,6 +4,7 @@ import config.ConexionBD;
 import models.EquipoModel;
 import models.EquipoFactory;
 import repositories.EquipoRepository;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,12 +18,7 @@ public class EquipoDAO implements EquipoRepository {
     public boolean registrar(EquipoModel equipo) {
         if (equipo == null || equipo.getTipo() == null ||
                 !EquipoFactory.getTiposRegistrados().contains(
-                        equipo.getTipo().trim().toUpperCase(Locale.ROOT)) ||
-                equipo.getCodigo() <= 0 ||
-                equipo.getDescripcion() == null ||
-                equipo.getDescripcion().trim().isEmpty() ||
-                !Double.isFinite(equipo.getTarifaDia()) ||
-                equipo.getTarifaDia() <= 0) {
+                        equipo.getTipo().trim().toUpperCase(Locale.ROOT))) {
             return false;
         }
 
@@ -34,8 +30,8 @@ public class EquipoDAO implements EquipoRepository {
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
                 consulta.setInt(1, equipo.getCodigo());
                 consulta.setString(2, equipo.getTipo().trim().toUpperCase(Locale.ROOT));
-                consulta.setString(3, equipo.getDescripcion().trim());
-                consulta.setDouble(4, equipo.getTarifaDia());
+                consulta.setString(3, equipo.getDescripcion());
+                consulta.setBigDecimal(4, equipo.getTarifaDia());
                 consulta.setBoolean(5, equipo.isDisponible());
 
                 return consulta.executeUpdate() == 1;
@@ -58,7 +54,12 @@ public class EquipoDAO implements EquipoRepository {
                  ResultSet resultado = consulta.executeQuery()) {
 
                 while (resultado.next()) {
-                    equipos.add(convertirEquipo(resultado));
+                    try {
+                        equipos.add(convertirEquipo(resultado));
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Equipo omitido por tipo no registrado: " +
+                                resultado.getString("tipo"));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -80,7 +81,11 @@ public class EquipoDAO implements EquipoRepository {
 
                 try (ResultSet resultado = consulta.executeQuery()) {
                     if (resultado.next()) {
-                        return convertirEquipo(resultado);
+                        try {
+                            return convertirEquipo(resultado);
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("El equipo tiene un tipo no registrado.");
+                        }
                     }
                 }
             }
@@ -153,11 +158,13 @@ public class EquipoDAO implements EquipoRepository {
     }
 
     private EquipoModel convertirEquipo(ResultSet resultado) throws SQLException {
+        BigDecimal tarifa = resultado.getBigDecimal("tarifa_dia");
+
         return EquipoFactory.crearEquipo(
                 resultado.getString("tipo"),
                 resultado.getInt("codigo"),
                 resultado.getString("descripcion"),
-                resultado.getDouble("tarifa_dia"),
+                tarifa,
                 resultado.getBoolean("disponible")
         );
     }

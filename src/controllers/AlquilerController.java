@@ -1,10 +1,10 @@
-
 package controllers;
 
 import models.AlquilerModel;
 import models.EquipoModel;
 import repositories.AlquilerRepository;
 import services.AlquilerService;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class AlquilerController {
@@ -18,9 +18,9 @@ public class AlquilerController {
         this.alquilerService = alquilerService;
     }
 
-    public double calcularMonto(EquipoModel equipo, int dias) {
+    public BigDecimal calcularMonto(EquipoModel equipo, int dias) {
         if (equipo == null || dias <= 0) {
-            return 0;
+            return BigDecimal.ZERO;
         }
 
         return equipo.calcularMonto(dias);

@@ -6,6 +6,7 @@ import models.ClienteModel;
 import models.EquipoModel;
 import models.EquipoFactory;
 import repositories.AlquilerRepository;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,7 +39,7 @@ public class AlquilerDAO implements AlquilerRepository {
             consulta.setInt(2, alquiler.getEquipo().getCodigo());
             consulta.setDate(3, java.sql.Date.valueOf(alquiler.getFechaInicio()));
             consulta.setInt(4, alquiler.getDias());
-            consulta.setDouble(5, alquiler.getMontoCobrado());
+            consulta.setBigDecimal(5, alquiler.getMontoCobrado());
 
             return consulta.executeUpdate() == 1;
         }
@@ -86,7 +87,11 @@ public class AlquilerDAO implements AlquilerRepository {
                  ResultSet resultado = consulta.executeQuery()) {
 
                 while (resultado.next()) {
-                    alquileres.add(convertirAlquiler(resultado));
+                    try {
+                        alquileres.add(convertirAlquiler(resultado));
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Alquiler omitido por tipo de equipo no registrado.");
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -108,7 +113,11 @@ public class AlquilerDAO implements AlquilerRepository {
 
                 try (ResultSet resultado = consulta.executeQuery()) {
                     if (resultado.next()) {
-                        return convertirAlquiler(resultado);
+                        try {
+                            return convertirAlquiler(resultado);
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("El alquiler contiene un tipo de equipo no registrado.");
+                        }
                     }
                 }
             }
@@ -133,7 +142,11 @@ public class AlquilerDAO implements AlquilerRepository {
                  ResultSet resultado = consulta.executeQuery()) {
 
                 while (resultado.next()) {
-                    alquileres.add(convertirAlquiler(resultado));
+                    try {
+                        alquileres.add(convertirAlquiler(resultado));
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Alquiler pendiente omitido por tipo de equipo no registrado.");
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -179,13 +192,11 @@ public class AlquilerDAO implements AlquilerRepository {
 
                     try (ResultSet resultado = consulta.executeQuery()) {
                         while (resultado.next()) {
+                            BigDecimal total = resultado.getBigDecimal("total");
+
                             reporte.add(
                                     resultado.getString("tipo") + ": S/ " +
-                                            String.format(
-                                                    Locale.US,
-                                                    "%.2f",
-                                                    resultado.getDouble("total")
-                                            )
+                                            total.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()
                             );
                         }
                     }
@@ -209,7 +220,7 @@ public class AlquilerDAO implements AlquilerRepository {
                 resultado.getString("tipo"),
                 resultado.getInt("equipo_codigo"),
                 resultado.getString("descripcion"),
-                resultado.getDouble("tarifa_dia"),
+                resultado.getBigDecimal("tarifa_dia"),
                 resultado.getBoolean("disponible")
         );
 
@@ -219,7 +230,7 @@ public class AlquilerDAO implements AlquilerRepository {
                 equipo,
                 resultado.getDate("fecha_inicio").toLocalDate(),
                 resultado.getInt("dias"),
-                resultado.getDouble("monto_cobrado"),
+                resultado.getBigDecimal("monto_cobrado"),
                 resultado.getBoolean("devuelto")
         );
     }
