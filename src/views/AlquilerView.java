@@ -14,12 +14,18 @@ import java.util.Scanner;
 public class AlquilerView {
 
     private final Scanner scanner;
-    private final AlquilerController alquilerController = new AlquilerController();
-    private final ClienteController clienteController = new ClienteController();
-    private final EquipoController equipoController = new EquipoController();
+    private final AlquilerController alquilerController;
+    private final ClienteController clienteController;
+    private final EquipoController equipoController;
 
-    public AlquilerView(Scanner scanner) {
+    public AlquilerView(Scanner scanner,
+                        AlquilerController alquilerController,
+                        ClienteController clienteController,
+                        EquipoController equipoController) {
         this.scanner = scanner;
+        this.alquilerController = alquilerController;
+        this.clienteController = clienteController;
+        this.equipoController = equipoController;
     }
 
     public void mostrarMenu() {
@@ -118,13 +124,7 @@ public class AlquilerView {
             }
 
             AlquilerModel alquiler = new AlquilerModel(
-                    0,
-                    cliente,
-                    equipo,
-                    LocalDate.now(),
-                    dias,
-                    monto,
-                    false
+                    0, cliente, equipo, LocalDate.now(), dias, monto, false
             );
 
             if (alquilerController.registrar(alquiler)) {

@@ -1,14 +1,17 @@
 
 package controllers;
 
-import dao.EquipoDAO;
 import models.EquipoModel;
 import repositories.EquipoRepository;
 import java.util.ArrayList;
 
 public class EquipoController {
 
-    private final EquipoRepository equipoRepository = new EquipoDAO();
+    private final EquipoRepository equipoRepository;
+
+    public EquipoController(EquipoRepository equipoRepository) {
+        this.equipoRepository = equipoRepository;
+    }
 
     public boolean registrar(EquipoModel equipo) {
         if (equipo == null || equipo.getCodigo() <= 0 ||

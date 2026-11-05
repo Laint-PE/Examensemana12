@@ -1,14 +1,17 @@
 
 package controllers;
 
-import dao.ClienteDAOCache;
 import models.ClienteModel;
 import repositories.ClienteRepository;
 import java.util.ArrayList;
 
 public class ClienteController {
 
-    private final ClienteRepository clienteRepository = new ClienteDAOCache();
+    private final ClienteRepository clienteRepository;
+
+    public ClienteController(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
+    }
 
     public boolean registrar(ClienteModel cliente) {
         if (cliente == null || cliente.getDocumento() == null ||
@@ -25,7 +28,9 @@ public class ClienteController {
             return false;
         }
 
-        return clienteRepository.registrar(cliente);
+        ClienteModel nuevoCliente = new ClienteModel(documento, nombre, telefono);
+
+        return clienteRepository.registrar(nuevoCliente);
     }
 
     public ArrayList<ClienteModel> listar() {

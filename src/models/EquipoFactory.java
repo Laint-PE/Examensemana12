@@ -1,21 +1,31 @@
+
 package models;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class EquipoFactory {
 
-    private static final Map<String, EquipoCreator> CREADORES = new HashMap<>();
+    private static final Map<String, EquipoCreator> CREADORES = new LinkedHashMap<>();
 
     static {
         registrar("CAMARA", CamaraModel::new);
         registrar("AUDIO", AudioModel::new);
         registrar("ILUMINACION", IluminacionModel::new);
-        // Drones: registrar("DRON", DronModel::new);  <- única línea nueva
     }
 
     public static void registrar(String tipo, EquipoCreator creador) {
-        CREADORES.put(tipo.toUpperCase(), creador);
+        if (tipo == null || creador == null) {
+            throw new IllegalArgumentException("El tipo y el creador son obligatorios.");
+        }
+
+        CREADORES.put(tipo.toUpperCase(Locale.ROOT), creador);
+    }
+
+    public static ArrayList<String> getTiposRegistrados() {
+        return new ArrayList<>(CREADORES.keySet());
     }
 
     public static EquipoModel crearEquipo(String tipo, int codigo, String descripcion,
@@ -24,7 +34,7 @@ public class EquipoFactory {
             throw new IllegalArgumentException("El tipo de equipo es obligatorio.");
         }
 
-        EquipoCreator creador = CREADORES.get(tipo.toUpperCase());
+        EquipoCreator creador = CREADORES.get(tipo.toUpperCase(Locale.ROOT));
 
         if (creador == null) {
             throw new IllegalArgumentException("Tipo de equipo no válido: " + tipo);

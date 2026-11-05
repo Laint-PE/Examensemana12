@@ -8,11 +8,12 @@ import java.util.Scanner;
 
 public class ClienteView {
 
-    private Scanner scanner;
-    private ClienteController clienteController = new ClienteController();
+    private final Scanner scanner;
+    private final ClienteController clienteController;
 
-    public ClienteView(Scanner scanner) {
+    public ClienteView(Scanner scanner, ClienteController clienteController) {
         this.scanner = scanner;
+        this.clienteController = clienteController;
     }
 
     public void mostrarMenu() {

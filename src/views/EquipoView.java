@@ -4,15 +4,17 @@ package views;
 import controllers.EquipoController;
 import models.EquipoModel;
 import models.EquipoFactory;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class EquipoView {
 
     private final Scanner scanner;
-    private final EquipoController equipoController = new EquipoController();
+    private final EquipoController equipoController;
 
-    public EquipoView(Scanner scanner) {
+    public EquipoView(Scanner scanner, EquipoController equipoController) {
         this.scanner = scanner;
+        this.equipoController = equipoController;
     }
 
     public void mostrarMenu() {
@@ -58,28 +60,23 @@ public class EquipoView {
 
     private void registrar() {
         try {
-            System.out.println("\n1. Camara");
-            System.out.println("2. Audio");
-            System.out.println("3. Iluminacion");
-            System.out.print("Seleccione el tipo: ");
+            ArrayList<String> tipos = EquipoFactory.getTiposRegistrados();
 
-            int opcion = Integer.parseInt(scanner.nextLine());
-            String tipo;
+            System.out.println("\n===== TIPOS DE EQUIPO =====");
 
-            switch (opcion) {
-                case 1:
-                    tipo = "CAMARA";
-                    break;
-                case 2:
-                    tipo = "AUDIO";
-                    break;
-                case 3:
-                    tipo = "ILUMINACION";
-                    break;
-                default:
-                    System.out.println("Tipo no valido.");
-                    return;
+            for (int i = 0; i < tipos.size(); i++) {
+                System.out.println((i + 1) + ". " + tipos.get(i));
             }
+
+            System.out.print("Seleccione el tipo: ");
+            int opcion = Integer.parseInt(scanner.nextLine());
+
+            if (opcion < 1 || opcion > tipos.size()) {
+                System.out.println("Tipo no valido.");
+                return;
+            }
+
+            String tipo = tipos.get(opcion - 1);
 
             System.out.print("Codigo: ");
             int codigo = Integer.parseInt(scanner.nextLine());
@@ -113,12 +110,14 @@ public class EquipoView {
     }
 
     private void listar() {
-        if (equipoController.listar().isEmpty()) {
+        ArrayList<EquipoModel> equipos = equipoController.listar();
+
+        if (equipos.isEmpty()) {
             System.out.println("No hay equipos registrados.");
             return;
         }
 
-        for (EquipoModel equipo : equipoController.listar()) {
+        for (EquipoModel equipo : equipos) {
             System.out.println("\nCodigo: " + equipo.getCodigo());
             System.out.println("Descripcion: " + equipo.getDescripcion());
             System.out.println("Tipo: " + equipo.getTipo());

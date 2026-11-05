@@ -1,7 +1,6 @@
 
 package controllers;
 
-import dao.AlquilerDAO;
 import models.AlquilerModel;
 import models.EquipoModel;
 import repositories.AlquilerRepository;
@@ -13,9 +12,10 @@ public class AlquilerController {
     private final AlquilerRepository alquilerRepository;
     private final AlquilerService alquilerService;
 
-    public AlquilerController() {
-        this.alquilerRepository = new AlquilerDAO();
-        this.alquilerService = new AlquilerService();
+    public AlquilerController(AlquilerRepository alquilerRepository,
+                              AlquilerService alquilerService) {
+        this.alquilerRepository = alquilerRepository;
+        this.alquilerService = alquilerService;
     }
 
     public double calcularMonto(EquipoModel equipo, int dias) {
@@ -39,17 +39,13 @@ public class AlquilerController {
         return alquilerService.devolver(id);
     }
 
-    public boolean actualizarDevolucion(int id, boolean devuelto) {
-        if (!devuelto) return false;
-        return devolver(id);
-    }
-
     public ArrayList<AlquilerModel> listar() {
         return alquilerRepository.listar();
     }
 
     public AlquilerModel buscarPorId(int id) {
         if (id <= 0) return null;
+
         return alquilerRepository.buscarPorId(id);
     }
 
